@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="X-UA-Compatible" content="ie=edge">
+        <link rel="stylesheet" href="css/style.css">
+        <title>Projeto Piloto</title>
+    </head>
+    <body>
+        <section class="clTelaPrincipal" id="idTelaPrincipal">
+
+            <header class="clCabecalhoPrincipal">
+                <div class="clPrevisaoDoTempo">
+                    <output class="clTemperaturaMinima" id="tempMin">Min: 10ºC</output>
+                    <output class="clTemperaturaMáxima" id="tempMax">Max: 25ºC</output>
+                    <output class="clTemperaturaAtual" id="tempNow">Now: 15ºC</output>
+                </div>
+                <div class="clImagemPrevisaoDoTempo">
+                    <img class="clIconeTempo" src="./assets/icons/clear_weather_icon.png" alt="Clear Weather Icon">
+                    <img class="clIconeTempo" src="./assets/icons/clouds_icon.png" alt="Clouds Icon" hidden>
+                    <img class="clIconeTempo" src="./assets/icons/clouds_night_icon.png" alt="Clouds Night Icon" hidden>
+                    <img class="clIconeTempo" src="./assets/icons/night_icon.png" alt="Night Icon" hidden>
+                    <img class="clIconeTempo" src="./assets/icons/showers_icon.png" alt="Showers Icon" hidden>
+                    <img class="clIconeTempo" src="./assets/icons/snow_icon.png" alt="Snow Icon" hidden>
+                    <img class="clIconeTempo" src="./assets/icons/storm_icon.png" alt="Storm Icon" hidden>
+                </div>
+            </header>
+
+            <main class="clInfoPrincipal">
+                <div class="clInformacoes">
+                    
+                    <output class="clHoraCerta" id="horaCerta">12:30:56</output>
+                
+                    <output class="clDataCerta" id="hoje">Fri Jun 17th, 2022</output>
+                
+                    <output class="clMensagem" id="msn">Good Afternoon Mr. Hendrik, its 12:30 pm</output>
+                
+                    <output class="clDescricaoEvento" id="description">It´s time for lunch with the new customers</output>
+                
+                    <button type="button" name="nmBtnAlarme" id="idBtnAlarme" class="clBotaoAlarme" value="Set Alarm"><img src="assets/icons/time_icon.png" alt="Imagem relógio"> <p>Turn Alarm Off</p></button>
+                
+                </div>
+            </main>
+
+            <footer class="clRodapePrincipal">
+                <a href="#idTelaConfiguração" class="clIconeConfiguracao"><img alt="home" src="./assets/icons/configuration_settings_icon3.png"></a>
+            </footer>
+        </section>
+
+        <section class="clTelaConfiguração" id="idTelaConfiguração">
+            
+            <header class="clCabecalhoConfiguracao">
+                <h1>Config</h1>
+            </header>
+            
+            <main class="clInfoConfiguracao">
+                <form class="clFormularioConfiguracao">
+                    <div class="clLabelFormato">
+                        <label for="formatoHora">Time Format</label>
+                    </div>
+                    <div class="clFormato">
+                        <input type="radio" id="idFormato12" name="formatoHora" value="format12" checked>
+                        <label for="idFormato12" class="formatoHora">12</label>
+                        <input type="radio" id="idFormato24" name="formatoHora" value="format24">
+                        <label for="idFormato24" class="formatoHora">24</label>
+                    </div>
+                    <div class="clLabelTemperatura">
+                        <label for="escalaTemp">Temperature</label>
+                    </div>
+                    <div class="clTemperatura">
+                        <input type="radio" id="idCelsius" name="escalaTemp" value="c" checked>
+                        <label for="idCelsius" class="escalaTemp">°C</label>
+                        <input type="radio" id="idFahrenheit" name="escalaTemp" value="f">
+                        <label for="idFahrenheit" class="escalaTemp">°F</label>
+                        <input type="radio" id="idKelvin" name="escalaTemp" value="k">
+                        <label for="idKelvin" class="escalaTemp">°K</label>
+                    </div>
+                    <div class="clCidade">
+                        <input type="text" id="idCidade" name="cidade" placeholder="City">
+                    </div>
+                    <div class="clGenero">
+                        <input type="radio" id="idMr" name="sexo" value="mr" checked>
+                        <label for="idMr">Mr.</label>
+                        <input type="radio" id="idMrs" name="sexo" value="mrs">
+                        <label for="idMrs" class="sexo">Mrs.</label>
+                    </div>
+                    <div class="clNome">
+                        <input type="text" id="idNome" name="nome" placeholder="Name">
+                    </div>
+                    <div class="clBotaoSalvarConfiguracao">
+                        <button type="button" id="idBtnSalvar" value="Save">Save</button>
+                    </div>
+                </form>
+            </main>
+
+            <footer class="clRodapeConfiguracao">
+                <a href="#idTelaPrincipal"  class="link"><img src="../assets/icons/time_icon.png" alt="Imagem de um relógio como link para a página principal"></a>
+            </footer>
+
+            <div class="clBackgroundConfiguracao">
+                <img  src="/assets/icons/34262_config_configuration_engine_options_preferences_icon.png" alt="Imagem de uma engrenagem do botão de configuração">
+            </div>
+            
+        </section>
+
+        <section class="clTelaAlarme" id="idTelaAlarme">
+
+            <header class="clCabecalhoAlarme">
+                <h1>Alarm</h1>
+                <a href="#idTelaNovoAlarme">new alarm</a>
+            </header>
+            
+            <main class="clInfoAlarme">
+                <!-- Adicionar os checkbox -->
+                <div class="clAlarme">
+                    <input type="checkbox" id="idAlarm" name="nmAlarm" checked>
+                    <label for="idAlarm">12:30pm</label>
+                    <p>Lunch with the new customers</p>
+                </div>
+
+                <div class="clAlarme">
+                    <input type="checkbox" id="idAlarm" name="nmAlarm" checked>
+                    <label for="idAlarm">12:30pm</label>
+                    <p>Lunch with the new customers</p>
+                </div>
+
+                <div class="clAlarme">
+                    <input type="checkbox" id="idAlarm" name="nmAlarm" checked>
+                    <label for="idAlarm">12:30pm</label>
+                    <p>Lunch with the new customers</p>
+                </div>
+               
+            </main>
+            
+            <footer class="clRodapeAlarme">
+                <a href="#idTelaPrincipal"  class="link"><img src="../assets/icons/time_icon.png" alt="Imagem de um relógio como link para a página principal"></a>
+            </footer>
+
+            <div class="clBackgroundRelogio">
+                <img  src="/assets/icons/time_icon.png" alt="Imagem de uma engrenagem do botão de configuração">
+            </div>
+
+        </section>
+
+        <section class="clTelaNovoAlarme"id="idTelaNovoAlarme">
+
+            <header class="clCabecalhoNovoAlarme">
+                <h1>New Alarm</h1>
+            </header>
+
+            <main class="clInfoNovoAlarme">
+
+                <label class="clLabelTempo"for="idHora" >Time</label>
+
+                <div class="clTime">
+                    <input class="clHora" type="text" id="idHora" placeholder="10:30:00">
+                    
+                    <div class="clPeriodoAm">
+                        <input type="radio" id="idAm" name="nmPeriodo" value="AM" checked>
+                        <label for="idAm">am</label>
+                    </div>
+                    <div class="clPeriodoPm">
+                        <input type="radio" id="idPm" name="nmPeriodo" value="PM">
+                        <label for="idPm">pm</label>
+                    </div>
+                    
+                </div>
+
+                <div class="clDescricao">
+                    <input type="text" id="idDescrição" placeholder="Description">
+                </div>
+                
+                <button type="button" id="idBtnSave" class="clBotaoSalvarAlarme">Save</button>
+
+            </main>
+
+            <footer class="clRodapeNovoAlarme">
+                <a href="#idTelaPrincipal"  class="link"><img src="../assets/icons/time_icon.png" alt="Imagem de um relógio como link para a página principal"></a>
+            </footer>
+
+            <div class="clBackgroundCalendario">
+                <img  src="/assets/icons/34257_calendar_icon.png" alt="Imagem de uma engrenagem do botão de configuração">
+            </div>
+            
+        </section>
+    </body>
+</html>
