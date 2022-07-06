@@ -45,9 +45,9 @@ app.get("/hoje", function(req, resp) {
 app.post("/config", async function(req, resp) {
 
     var hourFormat = req.query.formatoHora;
-    var temperatureScale = req.query.escalaTemp;
+    var temperatureScale = req.query.escalaTemperatura;
     var city = req.query.cidade;
-    var gender = req.query.sexo;
+    var gender = req.query.genero;
     var name = req.query.nome;
 
     var status = await postConfig(hourFormat, temperatureScale, city, gender, name);
@@ -62,6 +62,100 @@ app.get("/config", async function(req, resp) {
     resp.json(settings);
 
 });
+
+app.get("/message", async function(req, resp) {
+
+    var message = await getMessage();
+
+    resp.json(message);
+
+});
+
+async function getMessage() {
+
+    var message = "";
+
+    var settings = await getConfig();
+    var city = settings.value.cidade;
+    var name = settings.value.nome;
+    var format = settings.value.formatoHora;
+    var gender = settings.value.genero;
+
+    var weather = await getClima(city);
+    var timeSunrise = weather.sunrise.replace(/[^\d:]/g, '');
+    var timeSunset = weather.sunset.replace(/[^\d:]/g, '');
+
+    var timeSunsetInSeconds = convertHourToSeconds(timeSunset);
+    var timeSunsetMinusFourHours = (convertHourToSeconds(timeSunset) - (4 * 3600));
+
+    var timeNow = getHoraCerta();
+    var hourFormated = getHourFormat(format, timeNow);
+    var seconds = convertHourToSeconds(timeNow);
+
+    if ((seconds >= convertHourToSeconds("00:00:00")) && (seconds <= convertHourToSeconds("11:59:59"))) {
+        message = `Good Morning ${gender}. ${name}, it's ${hourFormated}`;
+    } else if ((seconds >= convertHourToSeconds("12:00:00")) && (seconds <= timeSunsetMinusFourHours)) {
+        message = `Good Afternoon ${gender}. ${name}, it's ${hourFormated}`;
+    } else if ((seconds >= (timeSunsetMinusFourHours + 1)) && (seconds <= timeSunsetInSeconds)) {
+        message = `Good Evening ${gender}. ${name}, it's ${hourFormated}`;
+    } else if ((seconds >= (timeSunsetInSeconds + 1)) && (seconds <= convertHourToSeconds("23:59:59"))) {
+        message = `Good Night ${gender}. ${name}, it's ${hourFormated} tomorrow the sun will rises at ${timeSunrise} am`;
+    }
+
+    var response = {mensagem: message};
+
+    return response;
+}
+
+function getHourFormat(format, time) {
+
+    var hourFormated = "";
+    var timeList = String(time).split(":");
+
+    if (format == 12) {
+
+        if (timeList[0] > 12) {
+            timeList[0] = timeList[0] - 12;
+            if (timeList[0] < 10) {
+                timeList[0] = "0" + timeList[0];
+            }
+            hourFormated = timeList[0] + ":" + timeList[1] + ":" + timeList[2] + " pm";
+        } else {
+            if (timeList[0] < 10) {
+                timeList[0] = "0" + timeList[0];
+            }
+            hourFormated = timeList[0] + ":" + timeList[1] + ":" + timeList[2] + " am";
+        }
+
+    } else {
+
+        if ((timeList[1] == "00") && (timeList[2] == "00")) {
+            hourFormated = time + " o'Clock";
+        } else {
+            hourFormated = time + " hours";
+        }
+        
+    }
+
+    return hourFormated;
+
+}
+
+function convertHourToSeconds(time) {
+
+    const timeList = String(time).split(":");
+    let seconds = 0;
+
+    if(timeList[2]) {
+        seconds = Number((timeList[0] * 3600) + (timeList[1] * 60) + (timeList[2] * 1));
+    } else if (timeList[1]) {
+        seconds = Number((timeList[0] * 3600) + (timeList[1] * 60));
+    } else {
+        seconds = Number((timeList[0] * 3600));
+    }
+    
+    return seconds;
+}
 
 async function getConfig() {
 
@@ -105,13 +199,13 @@ async function postConfig(hourFormat, temperatureScale, city, gender, name) {
     var fileStatus = "";
     var response = {};
 
-    if ((hourFormat != "format12") && (hourFormat != "format24")) {
+    if ((hourFormat != "12") && (hourFormat != "24")) {
         status = 1;
         message = "Por favor informe um formato de hora válido";
     } else if ((temperatureScale != "C") && (temperatureScale != "F") && (temperatureScale != "K")) {
         status = 1;
         message = "Por favor informe uma escala de temperatura válida";
-    } else if ((gender != "male") && (gender != "female")) {
+    } else if ((gender != "Mr") && (gender != "Mrs")) {
         status = 1;
         message = "Por favor informe um gênero válido";
     } else if (city == "") {
@@ -121,7 +215,7 @@ async function postConfig(hourFormat, temperatureScale, city, gender, name) {
         status = 1;
         message = "Campo nome não informado";
     } else if (status == 0) {
-        configObject = {formatoHora: hourFormat, escalaTemperatura: temperatureScale, Cidade: city, Gênero: gender, Nome: name};
+        configObject = {formatoHora: hourFormat, escalaTemperatura: temperatureScale, cidade: city, genero: gender, nome: name};
         fileStatus = await saveFile(JSON.stringify(configObject));
         
         if(fileStatus != "Arquivo salvo com sucesso!") {
@@ -210,7 +304,7 @@ async function getClima(city) {
                         {cidade:"palhoca", woeid:460341}, {cidade:"maravilha", woeid: 460067}];
                        
     city = removeAccents(String(city).toLowerCase());
-
+    
     citiesWOEID.forEach(element => {
         if (element.cidade == city){
             woeid = element.woeid;
@@ -226,7 +320,7 @@ async function getClima(city) {
 
     var requisition = {
         method: "GET",
-        url: `https://api.hgbrasil.com/weather?format=json-cors&key=${key}&woeid=${woeid}&fields=only_results,city_name,temp,condition_code,sunrise,sunset,forecast,max,min&array_limit=1`
+        url: `https://api.hgbrasil.com/weather?format=json-cors&key=${key}&woeid=${woeid}&fields=only_results,city_name,temp,condition_code,sunrise,sunset,forecast,max,min,sunrise&array_limit=1`
     }
 
     var weather = await axios.request(requisition);
