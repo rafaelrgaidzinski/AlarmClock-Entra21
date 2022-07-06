@@ -2,11 +2,12 @@ const express = require("express");
 const cors = require("cors");
 const { default: axios } = require("axios");
 const { log } = require("console");
-var removeAccents = require("remove-accents");
+const removeAccents = require("remove-accents");
+const fs = require("fs/promises");
 
 const app = express();
 
-const porta = 3001;
+const porta = 443;
 app.listen(porta, function(){
     console.log(`Servidor rodando na porta ${porta}`);
 });
@@ -24,41 +25,155 @@ app.get("/clima", async function(req, resp) {
 
     var weather = await getClima(city);
     
-    var weather = {tempMin: weather.data.forecast[0].min, tempMax: weather.data.forecast[0].max, tempNow: weather.data.temp, 
-                    condition_code: weather.data.condition_code, sunrise: weather.data.sunrise, sunset: weather.data.sunset};
-    
-    resp.json({weather});
+    resp.json(weather);
 });
 
 app.get("/horaCerta", function(req, resp) {
 
    var horaCerta = getHoraCerta()
 
-   resp.json({horaCerta});
-
+   resp.json(horaCerta);
 });
 
 app.get("/hoje", function(req, resp) {
 
     var hoje = getHoje();
 
-    resp.json({hoje});
+    resp.json(hoje);
+});
+
+app.post("/config", async function(req, resp) {
+
+    var hourFormat = req.query.formatoHora;
+    var temperatureScale = req.query.escalaTemp;
+    var city = req.query.cidade;
+    var gender = req.query.sexo;
+    var name = req.query.nome;
+
+    var status = await postConfig(hourFormat, temperatureScale, city, gender, name);
+    
+    resp.json(status);
+});
+
+app.get("/config", async function(req, resp) {
+
+    var settings = await getConfig();
+
+    resp.json(settings);
 
 });
+
+async function getConfig() {
+
+    var configStatus;
+    var configMessage;
+    var configValue;
+    var settings;
+
+    const file = await readFile();
+    
+    try {
+        configValue = JSON.parse(file);
+        configStatus = 0;
+        configMessage = "Arquivo lido com sucesso!";
+        settings = {status: configStatus, mensagem: configMessage, value: configValue};
+    } catch (err) {
+        configStatus = 2;
+        configMessage = file;
+        settings = {status: configStatus, mensagem: configMessage};
+    }
+
+    return settings;
+}
+
+async function readFile() {
+
+    try {
+        const file = await fs.readFile("../files/config.json", {encoding: "utf8"});
+        return file;
+    } catch (err) {
+        return err.message;
+    }
+
+}
+
+async function postConfig(hourFormat, temperatureScale, city, gender, name) {
+
+    var status = 0;
+    var message = "";
+    var configObject = {};
+    var fileStatus = "";
+    var response = {};
+
+    if ((hourFormat != "format12") && (hourFormat != "format24")) {
+        status = 1;
+        message = "Por favor informe um formato de hora válido";
+    } else if ((temperatureScale != "C") && (temperatureScale != "F") && (temperatureScale != "K")) {
+        status = 1;
+        message = "Por favor informe uma escala de temperatura válida";
+    } else if ((gender != "male") && (gender != "female")) {
+        status = 1;
+        message = "Por favor informe um gênero válido";
+    } else if (city == "") {
+        status = 1;
+        message = "Campo cidade não informado";
+    } else if (name == "") {
+        status = 1;
+        message = "Campo nome não informado";
+    } else if (status == 0) {
+        configObject = {formatoHora: hourFormat, escalaTemperatura: temperatureScale, Cidade: city, Gênero: gender, Nome: name};
+        fileStatus = await saveFile(JSON.stringify(configObject));
+        
+        if(fileStatus != "Arquivo salvo com sucesso!") {
+            status = 2;
+            message = fileStatus;
+        }
+    }
+
+    if (status == 0) {
+        response = {status: status};
+    } else {
+        response = {status: status, mensagem: message};
+    }
+
+    return response; 
+}
+
+async function saveFile(info) {
+
+    try {
+        await fs.writeFile("../files/config.json", info);
+        var message = "Arquivo salvo com sucesso!";
+        return message; 
+    } catch (err) {
+        return err.message;
+    }           
+        
+};
 
 function getHoje() {
 
     var hoje;
     var today = new Date();
+    var day = today.getDate();
+    var posfixed;
 
-    const options = {weekday: "short", month: "short", day: "numeric", year: "numeric"}
+    if ((day == 1) || (day == 21) || (day == 31)) {
+        posfixed = "st, ";
+    } else if ((day == 2) || (day == 22)) {
+        posfixed = "nd, ";
+    } else if ((day == 3) ||(day == 23)) {
+        posfixed = "rd, ";
+    } else {
+        posfixed = "th, ";
+    }
 
     hoje = today.toLocaleDateString("en-US", {weekday: "short"}) + " ";
     hoje += today.toLocaleDateString("en-US", {month: "short"}) + " ";
-    hoje += today.toLocaleDateString("en-US", {day: "numeric"}) + "th, ";
+    hoje += today.toLocaleDateString("en-US", {day: "numeric"}) + posfixed;
     hoje += today.toLocaleDateString("en-US", {year: "numeric"});
 
-    return hoje
+    return hoje;
 }
 
 function getHoraCerta() {
@@ -116,7 +231,8 @@ async function getClima(city) {
 
     var weather = await axios.request(requisition);
 
-    return weather;
+    return {tempMin: weather.data.forecast[0].min, tempMax: weather.data.forecast[0].max, tempNow: weather.data.temp, 
+            condition_code: weather.data.condition_code, sunrise: weather.data.sunrise, sunset: weather.data.sunset};
 }
 
 async function getUserLocation(){
