@@ -5,7 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta http-equiv="X-UA-Compatible" content="ie=edge">
         <link rel="stylesheet" href="css/style.css">
-        <title>Projeto Piloto</title>
+        <title>Alarm Clock</title>
     </head>
     <body>
         <section class="clTelaPrincipal" id="idTelaPrincipal">
@@ -143,7 +143,7 @@
 
         </section>
 
-        <section class="clTelaNovoAlarme"id="idTelaNovoAlarme">
+        <section class="clTelaNovoAlarme" id="idTelaNovoAlarme">
 
             <header class="clCabecalhoNovoAlarme">
                 <h1>New Alarm</h1>
@@ -151,7 +151,7 @@
 
             <main class="clInfoNovoAlarme">
 
-                <label class="clLabelTempo"for="idHora" >Time</label>
+                <label class="clLabelTempo" for="idHora" >Time</label>
 
                 <div class="clTime">
                     <input class="clHora" type="text" id="idHora" placeholder="10:30:00">
@@ -163,15 +163,14 @@
                     <div class="clPeriodoPm">
                         <input type="radio" id="idPm" name="nmPeriodo" value="PM">
                         <label for="idPm">pm</label>
-                    </div>
-                    
+                    </div>  
                 </div>
 
                 <div class="clDescricao">
-                    <input type="text" id="idDescrição" placeholder="Description">
+                    <input type="text" id="idDescrição" maxlength="50" placeholder="Description">
                 </div>
                 
-                <button type="button" id="idBtnSave" class="clBotaoSalvarAlarme">Save</button>
+                <button type="button" id="idBtnSaveNewAlarm" class="clBotaoSalvarAlarme">Save</button>
 
             </main>
 
@@ -184,5 +183,125 @@
             </div>
             
         </section>
+
+        <script>
+
+            var alarms = [];
+            var periodSelected = true;
+            
+            var fieldHour = document.getElementById("idHora");
+            var fieldDescription = document.getElementById("idDescrição")
+            var btnSaveNewAlarm = document.getElementById("idBtnSaveNewAlarm");
+
+            btnSaveNewAlarm.addEventListener("click", function() {
+
+                var hour = consistHour();
+                var description = fieldDescription.value;
+
+                if (hour != false) {
+                    var alarm = {isAtivo: true, hora: hour, isAm: periodSelected, descricao: description};
+                    alarms.push(alarm);
+                }  
+
+            });
+
+            function consistHour() {
+
+                var hour = String(fieldHour.value);
+                var timeList = hour.split(":");
+
+                for (let index = 0; index < timeList.length; index++) {
+                    
+                    if (index == 0) {
+                        if ((timeList[index] == undefined) || (timeList[index] == "") || (timeList[index] > 11)) {
+
+                            return false;
+                        } else if ((timeList[index].length == 1) && (timeList[index] < 10)) {
+
+                            timeList[index] = "0" + timeList[index];
+                        }
+                    }
+
+                    if ((index == 1) || (index == 2)){
+                        if (timeList[index] > 59) {
+
+                            return false;
+                        } else if ((timeList[index].length == 1) && (timeList[index] < 10)) {
+
+                            timeList[index] = "0" + timeList[index];
+                        } else if (timeList[index] == "")  {
+
+                            timeList[index] = "00";
+                        }           
+                    } 
+                    
+                }           
+
+                if ((timeList[1] == undefined)) {
+                    timeList[1] = "00";
+                }
+
+                if ((timeList[2] == undefined)) {
+                    timeList[2] = "00";
+                }
+
+                for (let index = 0; index < timeList.length; index++) {
+                    
+                    if (index == 0) {
+                        hour = timeList[index];
+                    } else {
+                        hour += ":" + timeList[index];
+                    }
+                }
+
+                return hour;
+            }
+
+            fieldHour.addEventListener("keydown", function(event){
+
+                var key = event.key;
+                var condition = (((key >= 0) && (key <= 9)) || (key == "Backspace"));
+
+                if (condition == false) {
+
+                    event.preventDefault();
+
+                } else if (key != "Backspace"){
+
+                    var hour = String(fieldHour.value);
+
+                    if (hour.length <= 7) {
+
+                        while (hour.indexOf(":") > 0) {
+                            hour = hour.replace(":","");
+                        }
+
+                        fieldHour.value = hour.replace(/.{2}/g, '$&:');     
+                    } else {
+                        event.preventDefault();
+                    } 
+                }
+
+            });
+
+            document.body.addEventListener("change", function(event) {
+
+                var element = event.target;
+
+                if ((element.id == "idAm") || (element.id == "idPm")) {
+
+                    var period = document.querySelector('input[name="nmPeriodo"]:checked').value;
+
+                    if (period == "AM") {
+                        periodSelected = true;
+                    } else {
+                        periodSelected = false;
+                    }
+                }
+            });
+
+
+        </script>
+
     </body>
 </html>
