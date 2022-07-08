@@ -44,7 +44,7 @@
             </main>
 
             <footer class="clRodapePrincipal">
-                <a href="#idTelaConfiguração" class="clIconeConfiguracao"><img alt="home" src="./assets/icons/configuration_settings_icon3.png"></a>
+                <a href="#idTelaConfiguração" class="clIconeConfiguracao"><img id="idIconeConfiguracao" alt="home" src="./assets/icons/configuration_settings_icon3.png"></a>
             </footer>
         </section>
 
@@ -91,6 +91,9 @@
                     <div class="clBotaoSalvarConfiguracao">
                         <button type="button" id="idBtnSalvar" value="Save">Save</button>
                     </div>
+                    <br><br>
+
+                    <output id="idMessageSettings"></output>
                 </form>
             </main>
 
@@ -167,6 +170,129 @@
         </section>
 
         <script>
+
+            /* Script tela Config */
+
+            var radioButtonFormat = document.querySelectorAll("input[name='formatoHora']");
+            var radioButtonTemperatureScale = document.querySelectorAll("input[name='escalaTemp']");
+            var radioButtonGender = document.querySelectorAll("input[name='sexo']");
+            var fieldCity = document.getElementById("idCidade");
+            var fieldName = document.getElementById("idNome");
+            var buttonSaveSettings = document.getElementById("idBtnSalvar");
+            var fieldMessageSettings = document.getElementById("idMessageSettings");
+
+            buttonSaveSettings.addEventListener("click", postConfig);
+
+            document.body.addEventListener("click", function(event) {
+
+                var element = event.target;
+
+                if (element.id == "idIconeConfiguracao") {
+                    getConfig();
+                }
+
+            })
+
+            async function getConfig() {
+
+                const response = await fetch(`http://localhost:3001/config`);
+                const data = await response.json();
+                setInfo(data);
+            }
+
+            function setInfo(info) {
+
+                radioButtonFormat.forEach(element => {
+                    
+                    if (element.value == info.value.formatoHora) {
+                        element.checked = true;
+                    }
+                });
+
+                radioButtonTemperatureScale.forEach(element => {
+
+                    if (element.value == info.value.escalaTemperatura) {
+                        element.checked = true;
+                    }
+                });
+
+                fieldCity.value = info.value.cidade;
+
+                radioButtonGender.forEach(element => {
+                    
+                    if (element.value == info.value.genero) {
+                        element.checked = true;
+                    }
+                });
+
+                fieldName.value = info.value.nome;
+
+            }
+
+            async function postConfig() {
+
+                var informations = await getInfo();
+                
+                const settings = {  method: 'POST',
+                                    headers: {
+                                                Accept: 'application/json',
+                                                'Content-Type': 'application/json',
+                                            }
+                                };
+
+                const response = await fetch(`http://localhost:3001/config${informations}`, settings);
+                const data = await response.json();
+
+                if (data.mensagem != undefined) {
+                    fieldMessageSettings.value = data.mensagem;
+                } else {
+                    fieldMessageSettings.value = "Informações gravadas com sucesso!";
+                }
+
+                setTimeout(() => {
+                    fieldMessageSettings.value = "";
+                }, 5000);
+                
+            }
+
+            async function getInfo() {
+                
+                var hourFormat;
+                var temperatureScale;
+                var city; 
+                var gender;
+                var name;
+
+                radioButtonFormat.forEach(element => {
+                    
+                    if (element.checked == true) {
+                        hourFormat = element.value;
+                    }
+                });
+
+                radioButtonTemperatureScale.forEach(element => {
+
+                    if (element.checked == true) {
+                        temperatureScale = element.value;
+                    }
+                });
+
+                city = fieldCity.value;
+
+                radioButtonGender.forEach(element => {
+                    
+                    if (element.checked == true) {
+                        gender = element.value;
+                    }
+
+                });
+
+                name = fieldName.value;
+
+                var informations = `?formatoHora=${hourFormat}&escalaTemperatura=${temperatureScale}&cidade=${city}&genero=${gender}&nome=${name}`;
+
+                return informations;
+            }
 
             /* Script tela Alarm */
 

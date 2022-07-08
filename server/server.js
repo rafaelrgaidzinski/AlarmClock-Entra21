@@ -7,7 +7,7 @@ const fs = require("fs/promises");
 
 const app = express();
 
-const porta = 443;
+const porta = 3001;
 app.listen(porta, function(){
     console.log(`Servidor rodando na porta ${porta}`);
 });
