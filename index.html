@@ -112,25 +112,7 @@
             </header>
             
             <main class="clInfoAlarme">
-                <!-- Adicionar os checkbox -->
-                <div class="clAlarme">
-                    <input type="checkbox" id="idAlarm" name="nmAlarm" checked>
-                    <label for="idAlarm">12:30pm</label>
-                    <p>Lunch with the new customers</p>
-                </div>
-
-                <div class="clAlarme">
-                    <input type="checkbox" id="idAlarm" name="nmAlarm" checked>
-                    <label for="idAlarm">12:30pm</label>
-                    <p>Lunch with the new customers</p>
-                </div>
-
-                <div class="clAlarme">
-                    <input type="checkbox" id="idAlarm" name="nmAlarm" checked>
-                    <label for="idAlarm">12:30pm</label>
-                    <p>Lunch with the new customers</p>
-                </div>
-               
+                
             </main>
             
             <footer class="clRodapeAlarme">
@@ -151,11 +133,10 @@
 
             <main class="clInfoNovoAlarme">
 
-                <label class="clLabelTempo" for="idHora" >Time</label>
-
                 <div class="clTime">
-                    <input class="clHora" type="text" id="idHora" placeholder="10:30:00">
-                    
+                    <label class="clLabelTempo" for="idHora" >Time</label>
+                    <input class="clHora" type="text" id="idHora" placeholder="10:30">
+
                     <div class="clPeriodoAm">
                         <input type="radio" id="idAm" name="nmPeriodo" value="AM" checked>
                         <label for="idAm">am</label>
@@ -164,13 +145,14 @@
                         <input type="radio" id="idPm" name="nmPeriodo" value="PM">
                         <label for="idPm">pm</label>
                     </div>  
-                </div>
 
-                <div class="clDescricao">
-                    <input type="text" id="idDescrição" maxlength="50" placeholder="Description">
+                    <input class="clDescricao" type="text" id="idDescrição" maxlength="50" placeholder="Description">  
                 </div>
                 
                 <button type="button" id="idBtnSaveNewAlarm" class="clBotaoSalvarAlarme">Save</button>
+                <br><br>
+
+                <output id="idMessageNewAlarm"></output>
 
             </main>
 
@@ -186,22 +168,134 @@
 
         <script>
 
+            /* Script tela Alarm */
+
+            document.body.addEventListener("change", function(event) {
+
+                var counter = 0;
+                var element = event.target;
+
+                if (element.className == "clAlarm") {
+                   
+                    alarms.forEach(alarm => {
+            
+                        counter++;
+
+                        if (element.id == ("idAlarm" + counter)) {
+                            if (alarm.isAtivo == true) {
+                                alarm.isAtivo = false;
+                            } else {
+                                alarm.isAtivo = true;
+                            }
+                        }
+
+                        
+                    });
+
+                    console.log(alarms);
+                }
+            });
+
+            function createAlarms(alarmsList) {
+
+                var counter = 0;
+                var infoAlarm = document.getElementsByClassName("clInfoAlarme");
+
+                while(infoAlarm[0].hasChildNodes()) {
+                    infoAlarm[0].removeChild(infoAlarm[0].firstChild);
+                }
+                
+                alarmsList.forEach(element => {
+
+                    counter++;
+
+                    var alarmDiv = document.createElement('div');
+                    alarmDiv.className = "clAlarme";
+
+                    var alarmCheckbox = document.createElement('input');
+                    alarmCheckbox.type = "checkbox";
+                    alarmCheckbox.id= "idAlarm" + counter;
+                    alarmCheckbox.name = "nmAlarm" + counter;
+                    alarmCheckbox.className = "clAlarm";
+
+                    if (element.isAtivo == true) {
+                        alarmCheckbox.checked = true;
+                    } else {
+                        alarmCheckbox.checked = false;
+                    }
+
+                    var alarmLabel = document.createElement('label');
+                    alarmLabel.htmlFor = "idAlarm" + counter;
+
+                    if (element.isAm == true) {
+                        alarmLabel.innerText = element.hora + "am";
+                    } else {
+                        alarmLabel.innerText = element.hora + "pm";
+                    }
+
+                    var alarmText = document.createElement('p');
+                    alarmText.innerText = element.descricao;
+
+                    alarmDiv.appendChild(alarmCheckbox);
+                    alarmDiv.appendChild(alarmLabel);
+                    alarmDiv.appendChild(alarmText);
+                    infoAlarm[0].appendChild(alarmDiv);
+                     
+                });
+
+            }
+
+            /* Script tela New Alarm */
+
             var alarms = [];
             var periodSelected = true;
             
             var fieldHour = document.getElementById("idHora");
-            var fieldDescription = document.getElementById("idDescrição")
+            var fieldDescription = document.getElementById("idDescrição");
             var btnSaveNewAlarm = document.getElementById("idBtnSaveNewAlarm");
-
+            var fieldMessageNewAlarm = document.getElementById("idMessageNewAlarm");
+            
             btnSaveNewAlarm.addEventListener("click", function() {
-
+                
                 var hour = consistHour();
                 var description = fieldDescription.value;
+                
+                if (alarms.length < 6) {
+                    if (hour != false) {
+                        var alarm = {isAtivo: true, hora: hour, isAm: periodSelected, descricao: description};
+                        alarms.push(alarm);
+                        
+                        fieldHour.value = "";
+                        fieldDescription.value = "";
+                        var fieldPeriod = document.getElementById("idAm");
+                        fieldPeriod.checked = true;
+                        periodSelected = true;
+                        
+                        /*Create Alarms vai para página principal no botão set alarm*/
+                        createAlarms(alarms);
+                        var url = location.href;
+                        location.href = "#idTelaAlarme"; 
+                        history.replaceState(null, null, url);
+                    
+                    } else {
+                        fieldMessageNewAlarm.value = "Por favor informe uma hora no intervalo de 00:00 às 11:59";
 
-                if (hour != false) {
-                    var alarm = {isAtivo: true, hora: hour, isAm: periodSelected, descricao: description};
-                    alarms.push(alarm);
-                }  
+                        setTimeout(() => {
+                            fieldMessageNewAlarm.value = "";
+                        }, 5000);
+                    } 
+                } else {
+                    fieldMessageNewAlarm.value = "O número máximo de alarmes já foi cadastrado";
+
+                    setTimeout(() => {
+                        fieldMessageNewAlarm.value = "";
+                        fieldHour.value = "";
+                        fieldDescription.value = "";
+                        var fieldPeriod = document.getElementById("idAm");
+                        fieldPeriod.checked = true;
+                        periodSelected = true;
+                    }, 5000);
+                } 
 
             });
 
@@ -222,7 +316,7 @@
                         }
                     }
 
-                    if ((index == 1) || (index == 2)){
+                    if (index == 1) {
                         if (timeList[index] > 59) {
 
                             return false;
@@ -241,13 +335,14 @@
                     timeList[1] = "00";
                 }
 
-                if ((timeList[2] == undefined)) {
-                    timeList[2] = "00";
-                }
-
                 for (let index = 0; index < timeList.length; index++) {
                     
                     if (index == 0) {
+                        
+                        if ((periodSelected == false) && (timeList[index] == "00")) {
+                            timeList[index] = "12";
+                        }
+
                         hour = timeList[index];
                     } else {
                         hour += ":" + timeList[index];
@@ -262,6 +357,10 @@
                 var key = event.key;
                 var condition = (((key >= 0) && (key <= 9)) || (key == "Backspace"));
 
+                if (key == "Tab") {
+                    fieldDescription.focus();
+                }
+
                 if (condition == false) {
 
                     event.preventDefault();
@@ -270,7 +369,7 @@
 
                     var hour = String(fieldHour.value);
 
-                    if (hour.length <= 7) {
+                    if (hour.length <= 4) {
 
                         while (hour.indexOf(":") > 0) {
                             hour = hour.replace(":","");
