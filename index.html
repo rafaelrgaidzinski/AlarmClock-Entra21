@@ -12,18 +12,12 @@
 
             <header class="clCabecalhoPrincipal">
                 <div class="clPrevisaoDoTempo">
-                    <output class="clTemperaturaMinima" id="tempMin">Min: 10ºC</output>
-                    <output class="clTemperaturaMáxima" id="tempMax">Max: 25ºC</output>
-                    <output class="clTemperaturaAtual" id="tempNow">Now: 15ºC</output>
+                    <output class="clTemperaturaMinima" id="tempMin"></output>
+                    <output class="clTemperaturaMáxima" id="tempMax"></output>
+                    <output class="clTemperaturaAtual" id="tempNow"></output>
                 </div>
                 <div class="clImagemPrevisaoDoTempo">
-                    <img class="clIconeTempo" src="./assets/icons/clear_weather_icon.png" alt="Clear Weather Icon">
-                    <img class="clIconeTempo" src="./assets/icons/clouds_icon.png" alt="Clouds Icon" hidden>
-                    <img class="clIconeTempo" src="./assets/icons/clouds_night_icon.png" alt="Clouds Night Icon" hidden>
-                    <img class="clIconeTempo" src="./assets/icons/night_icon.png" alt="Night Icon" hidden>
-                    <img class="clIconeTempo" src="./assets/icons/showers_icon.png" alt="Showers Icon" hidden>
-                    <img class="clIconeTempo" src="./assets/icons/snow_icon.png" alt="Snow Icon" hidden>
-                    <img class="clIconeTempo" src="./assets/icons/storm_icon.png" alt="Storm Icon" hidden>
+                    
                 </div>
             </header>
 
@@ -171,6 +165,133 @@
 
         <script>
 
+            /* Script tela Principal*/
+
+            var fieldTempMin = document.getElementById("tempMin");
+            var fieldTempMax = document.getElementById("tempMax");
+            var fieldTempNow = document.getElementById("tempNow");
+            var divWeatherImage = document.querySelector("div[class='clImagemPrevisaoDoTempo']");
+
+            var config = {}; 
+            var city = "";
+            var weatherForecast = {};
+
+            document.addEventListener("DOMContentLoaded", async function() {
+                
+                config = await getConfig();
+                
+                if (config.value) {
+                    config = config.value;
+                } 
+        
+                if (config.cidade) {
+                    city = config.cidade;
+                }
+
+                weatherForecast = await getClima(city);
+                setInfoWeather(weatherForecast);
+            });
+
+            setInterval(() => {
+                getClimaAgora();
+            }, (1000 * 60 * 15));
+            
+            async function getClimaAgora() {
+                
+                var weatherForecastNow = await getClima(city);
+
+                const keys = Object.keys(weatherForecastNow);
+
+                keys.forEach(key => {
+
+                    if (weatherForecast[key] != weatherForecastNow[key]) {
+                        weatherForecast = weatherForecastNow;
+                        setInfoWeather(weatherForecast);
+                    }
+                    
+                });
+            }
+
+            function setInfoWeather(weather) {
+
+                fieldTempMin.value = "Min: " + weather.tempMin + " °C";
+                fieldTempMax.value = "Max: " + weather.tempMax + " °C";
+                fieldTempNow.value = "Now: " + weather.tempNow + " °C";
+
+                var weatherImage = document.createElement('img');
+                weatherImage.className = "clIconeTempo";
+
+                switch (weather.condition_slug) {
+                    case "storm":
+                        weatherImage.src = "./assets/icons/storm_icon.png";
+                        weatherImage.alt = "Imagem de nuvem com raios indicando tempestade";
+                        break;
+                    case "snow":
+                        weatherImage.src = "./assets/icons/snow_icon.png";
+                        weatherImage.alt = "Imagem de nuvem com neve";
+                        break;
+                    case "cloud":
+                    case "fog":
+                        weatherImage.src = "./assets/icons/overcast_icon.png";
+                        weatherImage.alt = "Imegm de nuvem indicando tempo nublado ou com neblina";
+                        break;
+                    case "hail":
+                        weatherImage.src = "./assets/icons/scattered_showers_icon.png";
+                        weatherImage.alt = "Imagem de nuvem com granizo";
+                        break;
+                    case "clear_day":
+                    case "none_day":
+                        weatherImage.src = "./assets/icons/clear_weather_icon.png";
+                        weatherImage.alt = "Imagem do sol indicando dia ensolarado";
+                        break;
+                    case "clear_night":
+                    case "none_night":
+                        weatherImage.src = "./assets/icons/night_icon.png";
+                        weatherImage.alt = "Imagem da lua indicando noite com céu limpo";
+                        break;
+                    case "rain":
+                        weatherImage.src = "./assets/icons/showers_icon.png";
+                        weatherImage.alt = "Imagem de nuvem com chuva indicando dia chuvoso";
+                        break;
+                    case "cloudly_day":
+                        weatherImage.src = "./assets/icons/clouds_icon.png";
+                        weatherImage.alt = "Imagem do sol com nuvens indicando dia nublado";
+                        break;
+                    case "cloudly_night":
+                        weatherImage.src = "./assets/icons/clouds_night_icon.png";
+                        weatherImage.alt = "Imagem da lua com nuvens indicando noite com céu nublado";
+                        break;
+                    default:
+                        break;
+                }
+
+                if (divWeatherImage.hasChildNodes()) {
+                    divWeatherImage.removeChild(divWeatherImage.firstChild);
+                }
+
+                divWeatherImage.appendChild(weatherImage);
+
+            }
+
+            async function getClima(city) {
+
+                const response = await fetch(`http://localhost:3001/clima?cidade=${city}`);
+                const data = await response.json();
+                
+                return data;
+            }
+
+            document.body.addEventListener("click", async function(event) {
+
+                var element = event.target;
+
+                if (element.id == "idIconeConfiguracao") {
+                    const data = await getConfig();
+                    setInfoConfig(data);
+                }
+
+            })
+
             /* Script tela Config */
 
             var radioButtonFormat = document.querySelectorAll("input[name='formatoHora']");
@@ -183,24 +304,15 @@
 
             buttonSaveSettings.addEventListener("click", postConfig);
 
-            document.body.addEventListener("click", function(event) {
-
-                var element = event.target;
-
-                if (element.id == "idIconeConfiguracao") {
-                    getConfig();
-                }
-
-            })
-
             async function getConfig() {
 
                 const response = await fetch(`http://localhost:3001/config`);
                 const data = await response.json();
-                setInfo(data);
+                
+                return data;
             }
 
-            function setInfo(info) {
+            function setInfoConfig(info) {
 
                 radioButtonFormat.forEach(element => {
                     
@@ -231,7 +343,7 @@
 
             async function postConfig() {
 
-                var informations = await getInfo();
+                var informations = await getInfoConfig();
                 
                 const settings = {  method: 'POST',
                                     headers: {
@@ -255,7 +367,7 @@
                 
             }
 
-            async function getInfo() {
+            async function getInfoConfig() {
                 
                 var hourFormat;
                 var temperatureScale;

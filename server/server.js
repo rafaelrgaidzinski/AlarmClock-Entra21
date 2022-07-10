@@ -320,13 +320,13 @@ async function getClima(city) {
 
     var requisition = {
         method: "GET",
-        url: `https://api.hgbrasil.com/weather?format=json-cors&key=${key}&woeid=${woeid}&fields=only_results,city_name,temp,condition_code,sunrise,sunset,forecast,max,min,sunrise&array_limit=1`
+        url: `https://api.hgbrasil.com/weather?format=json-cors&key=${key}&woeid=${woeid}&fields=only_results,city_name,temp,condition_slug,sunrise,sunset,forecast,max,min,sunrise&array_limit=1`
     }
 
     var weather = await axios.request(requisition);
 
     return {tempMin: weather.data.forecast[0].min, tempMax: weather.data.forecast[0].max, tempNow: weather.data.temp, 
-            condition_code: weather.data.condition_code, sunrise: weather.data.sunrise, sunset: weather.data.sunset};
+            condition_slug: weather.data.condition_slug, sunrise: weather.data.sunrise, sunset: weather.data.sunset};
 }
 
 async function getUserLocation(){
