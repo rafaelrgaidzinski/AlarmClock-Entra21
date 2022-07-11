@@ -4,6 +4,7 @@ const { default: axios } = require("axios");
 const { log } = require("console");
 const removeAccents = require("remove-accents");
 const fs = require("fs/promises");
+const fse = require("fs");
 
 const app = express();
 
@@ -71,6 +72,100 @@ app.get("/message", async function(req, resp) {
 
 });
 
+app.post("/alarms", async function(req, resp) {
+
+    var isActive = req.query.isAtivo;
+    var hour = req.query.hora;
+    var period = req.query.isAm;
+    var description = req.query.descricao;
+
+    var status = await postAlarm(isActive, hour, period, description);
+    
+    resp.json(status);
+
+});
+
+app.get("/alarms", async function(req, resp) {
+
+    var alarms = await getAlarms();
+
+    resp.json(alarms);
+});
+
+async function getAlarms() {
+
+    var alarmStatus = 0;
+    var alarmMessage = "Arquivo lido com sucesso!";;
+
+    const path = "../files/alarms.json";
+
+    if (fse.existsSync(path)) {
+
+        const fileReaded = await readFile(path);
+
+        try {
+            alarms = JSON.parse(fileReaded);
+            return {status: alarmStatus, mensagem: alarmMessage, alarms: alarms};
+
+        } catch {
+            alarmStatus = 2;
+            alarmMessage = fileReaded;
+            return {status: alarmStatus, mensagem: alarmMessage};
+        }
+    } else {
+
+        alarmStatus = 1;
+        alarmMessage = "Arquivo não encontrado!";
+        return {status: alarmStatus, mensagem: alarmMessage};
+    }
+    
+}
+
+async function postAlarm(isActive, hour, period, description) {
+
+    var alarmStatus = 0;
+    var alarmMessage = "";
+    var alarms = [];
+
+    var active = (isActive === "true");
+    var periodSelected = (period === "true");
+
+    var alarm = {isAtivo: active, hora: hour, isAm: periodSelected, descricao: description};    
+
+    const path = "../files/alarms.json";
+
+    if (fse.existsSync(path)) {
+
+        const fileReaded = await readFile(path);
+
+        try {
+            alarms = JSON.parse(fileReaded);
+        } catch {
+            alarmStatus = 2;
+            alarmMessage = fileReaded;
+            return {status: alarmStatus, mensagem: alarmMessage};
+        }
+    }
+    
+    if (alarms.length < 6 ) {
+        alarms.push(alarm);
+    } else {
+        alarmStatus = 1;
+        alarmMessage = "O número máximo de alarmes já foi cadastrado";
+        return {status: alarmStatus, mensagem: alarmMessage};
+    }
+    
+    const fileSaved = await saveFile(path, JSON.stringify(alarms));
+
+    if (fileSaved != "Arquivo salvo com sucesso!") {
+        alarmStatus = 2;
+        alarmMessage = fileSaved;
+        return {status: alarmStatus, mensagem: alarmMessage};
+    }
+
+    return {status: alarmStatus}  
+}
+
 async function getMessage() {
 
     var message = "";
@@ -84,23 +179,36 @@ async function getMessage() {
     var weather = await getClima(city);
     var timeSunrise = weather.sunrise.replace(/[^\d:]/g, '');
     var timeSunset = weather.sunset.replace(/[^\d:]/g, '');
-
-    var timeSunsetInSeconds = convertHourToSeconds(timeSunset);
-    var timeSunsetMinusFourHours = (convertHourToSeconds(timeSunset) - (4 * 3600));
+    
+    var timeSunsetInSeconds = (convertHourToSeconds(timeSunset) + (12 * 3600));
+    var timeSunsetMinusFourHours = (convertHourToSeconds(timeSunset) + (8 * 3600));
 
     var timeNow = getHoraCerta();
-    var hourFormated = getHourFormat(format, timeNow.horaCerta);
-    var seconds = convertHourToSeconds(timeNow.horaCerta);
-    console.log(seconds);
+    
+    var timeNowInseconds = convertHourToSeconds(timeNow.horaCerta);
+    var morningStart = convertHourToSeconds("00:00:00");
+    var morningFinish = convertHourToSeconds("11:59:59");
+    var afternoonStarts = convertHourToSeconds("12:00:00");
+    var nightFinish = convertHourToSeconds("23:59:59");
 
-    if ((seconds >= convertHourToSeconds("00:00:00")) && (seconds <= convertHourToSeconds("11:59:59"))) {
+    var hourFormated = getHourFormat(format, timeNow.horaCerta);
+   
+    if ((timeNowInseconds >= morningStart) && (timeNowInseconds <= morningFinish)) {
+
         message = `Good Morning ${gender}. ${name}, it's ${hourFormated}`;
-    } else if ((seconds >= convertHourToSeconds("12:00:00")) && (seconds <= timeSunsetMinusFourHours)) {
+
+    } else if ((timeNowInseconds >= afternoonStarts) && (timeNowInseconds <= timeSunsetMinusFourHours)) {
+
         message = `Good Afternoon ${gender}. ${name}, it's ${hourFormated}`;
-    } else if ((seconds >= (timeSunsetMinusFourHours + 1)) && (seconds <= timeSunsetInSeconds)) {
+
+    } else if ((timeNowInseconds >= (timeSunsetMinusFourHours + 1)) && (timeNowInseconds <= timeSunsetInSeconds)) {
+
         message = `Good Evening ${gender}. ${name}, it's ${hourFormated}`;
-    } else if ((seconds >= (timeSunsetInSeconds + 1)) && (seconds <= convertHourToSeconds("23:59:59"))) {
+
+    } else if ((timeNowInseconds >= (timeSunsetInSeconds + 1)) && (timeNowInseconds <= nightFinish)) {
+
         message = `Good Night ${gender}. ${name}, it's ${hourFormated} tomorrow the sun will rises at ${timeSunrise} am`;
+
     }
 
     var response = {mensagem: message};
@@ -146,7 +254,6 @@ function convertHourToSeconds(time) {
 
     const timeList = String(time).split(":");
     let seconds = 0;
-    console.log(timeList);
 
     if(timeList[2]) {
         seconds = Number((timeList[0] * 3600) + (timeList[1] * 60) + (timeList[2] * 1));
@@ -155,8 +262,6 @@ function convertHourToSeconds(time) {
     } else {
         seconds = Number((timeList[0] * 3600));
     }
-
-    console.log(seconds);
     
     return seconds;
 }
@@ -168,7 +273,7 @@ async function getConfig() {
     var configValue;
     var settings;
 
-    const file = await readFile();
+    const file = await readFile("../files/config.json");
     
     try {
         configValue = JSON.parse(file);
@@ -184,10 +289,10 @@ async function getConfig() {
     return settings;
 }
 
-async function readFile() {
+async function readFile(path) {
 
     try {
-        const file = await fs.readFile("../files/config.json", {encoding: "utf8"});
+        const file = await fs.readFile(path, {encoding: "utf8"});
         return file;
     } catch (err) {
         return err.message;
@@ -220,7 +325,7 @@ async function postConfig(hourFormat, temperatureScale, city, gender, name) {
         message = "Campo nome não informado";
     } else if (status == 0) {
         configObject = {formatoHora: hourFormat, escalaTemperatura: temperatureScale, cidade: city, genero: gender, nome: name};
-        fileStatus = await saveFile(JSON.stringify(configObject));
+        fileStatus = await saveFile( "../files/config.json" ,JSON.stringify(configObject));
         
         if(fileStatus != "Arquivo salvo com sucesso!") {
             status = 2;
@@ -237,10 +342,10 @@ async function postConfig(hourFormat, temperatureScale, city, gender, name) {
     return response; 
 }
 
-async function saveFile(info) {
+async function saveFile(path, info) {
 
     try {
-        await fs.writeFile("../files/config.json", info);
+        await fs.writeFile(path , info);
         var message = "Arquivo salvo com sucesso!";
         return message; 
     } catch (err) {

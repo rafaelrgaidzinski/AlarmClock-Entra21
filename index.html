@@ -183,8 +183,14 @@
 
             var time = "";
             var timeList = [];
+            var alarms = {};
 
             document.addEventListener("DOMContentLoaded", async function() {
+
+                setInitialInfo();
+            });
+
+            async function setInitialInfo() {
 
                 config = await getConfig();
                 
@@ -199,12 +205,21 @@
                 weatherForecast = await getClima(city);
                 setInfoWeather(weatherForecast);
 
+                time = "";
+                setClock();
+
                 var today = await getHoje();
                 fieldDate.value = today.hoje;
 
-                var message = await getMsn();
+                var message = await getMessage();
                 fieldMessage.value = message.mensagem;
-            });
+
+                alarms = await getAlarm();
+                if (alarms.status == 0) {
+                    createAlarms(alarms.alarms);
+                }
+            
+            }
 
              async function getClima(city) {
 
@@ -309,19 +324,23 @@
             async function setClock() {
 
                 if (time == "") {
+
                     time =  await getHoraCerta();
                     timeList = time.horaCerta.split(":");
-                } if ((timeList[2] == 0) && (timeList[1] == 0)) {
+
+                } else if ((timeList[1] == 0) && (timeList[2] == 0)) {
+
                     time = await getHoraCerta();
                     timeList = time.horaCerta.split(":");
-
-                    var message = await getMsn();
-                    fieldMessage.value = message.mensagem;
                     
                     if ((timeList[0] == "00") && (timeList[1] == "00") && (timeList[2] == "00")) {
                         var today = await getHoje();
                         fieldDate.value = today.hoje;
                     }
+
+                    var message = await getMessage();
+                    fieldMessage.value = message.mensagem;
+
                 }
 
                 if (config.formatoHora == "12") {
@@ -330,7 +349,7 @@
                         timeList[0] = Number(timeList[0]) - 12;
                     }
                 }
-               
+
                 if (timeList[2] < 60) {
                     timeList[2] = Number(timeList[2]) + 1;
 
@@ -370,11 +389,11 @@
                 return data;
             }
             
-            async function getMsn() {
+            async function getMessage() {
 
                 const response = await fetch(`http://localhost:3001/message`);
                 const data = await response.json();
-                console.log(data);
+                
                 return data;
 
             }
@@ -513,7 +532,7 @@
 
                 if (element.className == "clAlarm") {
                    
-                    alarms.forEach(alarm => {
+                    alarms.alarms.forEach(alarm => {
             
                         counter++;
 
@@ -525,10 +544,10 @@
                             }
                         }
 
-                        
+                        console.log(alarm);
                     });
 
-                    console.log(alarms);
+                    
                 }
             });
 
@@ -583,7 +602,6 @@
 
             /* Script tela New Alarm */
 
-            var alarms = [];
             var periodSelected = true;
             
             var fieldHour = document.getElementById("idHora");
@@ -591,49 +609,68 @@
             var btnSaveNewAlarm = document.getElementById("idBtnSaveNewAlarm");
             var fieldMessageNewAlarm = document.getElementById("idMessageNewAlarm");
             
-            btnSaveNewAlarm.addEventListener("click", function() {
+            btnSaveNewAlarm.addEventListener("click", saveAlarm);
+
+            async function saveAlarm() {
                 
                 var hour = consistHour();
                 var description = fieldDescription.value;
-                
-                if (alarms.length < 6) {
-                    if (hour != false) {
-                        var alarm = {isAtivo: true, hora: hour, isAm: periodSelected, descricao: description};
-                        alarms.push(alarm);
-                        
-                        fieldHour.value = "";
-                        fieldDescription.value = "";
-                        var fieldPeriod = document.getElementById("idAm");
-                        fieldPeriod.checked = true;
-                        periodSelected = true;
-                        
-                        /*Create Alarms vai para página principal no botão set alarm*/
-                        createAlarms(alarms);
-                        var url = location.href;
-                        location.href = "#idTelaAlarme"; 
-                        history.replaceState(null, null, url);
+
+                if (hour != false) {
+
+                    var alarmInfo = `?isAtivo=${true}&hora=${hour}&isAm=${periodSelected}&descricao=${description}`;
+                    var response = await postAlarm(alarmInfo);
                     
-                    } else {
-                        fieldMessageNewAlarm.value = "Por favor informe uma hora no intervalo de 00:00 às 11:59";
+                    if (response.status != 0) {
+
+                        fieldMessageNewAlarm.value = response.mensagem;
 
                         setTimeout(() => {
                             fieldMessageNewAlarm.value = "";
+                            fieldHour.value = "";
+                            fieldDescription.value = "";
+                            var fieldPeriod = document.getElementById("idAm");
+                            fieldPeriod.checked = true;
+                            periodSelected = true;
                         }, 5000);
-                    } 
+
+                    } else {
+
+                        alarms = getAlarm();
+                        createAlarms(alarms.alarms);
+                    }
+
                 } else {
-                    fieldMessageNewAlarm.value = "O número máximo de alarmes já foi cadastrado";
+                    fieldMessageNewAlarm.value = "Por favor informe uma hora no intervalo de 00:00 às 11:59";
 
                     setTimeout(() => {
                         fieldMessageNewAlarm.value = "";
-                        fieldHour.value = "";
-                        fieldDescription.value = "";
-                        var fieldPeriod = document.getElementById("idAm");
-                        fieldPeriod.checked = true;
-                        periodSelected = true;
                     }, 5000);
                 } 
+            }
 
-            });
+            async function getAlarm() {
+
+                const response = await fetch(`http://localhost:3001/alarms`);
+                const data = await response.json();
+
+                return data;
+            }
+
+            async function postAlarm(alarmInfo) {
+
+                const settings = {  method: 'POST',
+                                    headers: {
+                                                Accept: 'application/json',
+                                                'Content-Type': 'application/json',
+                                            }
+                                };
+
+                const response = await fetch(`http://localhost:3001/alarms${alarmInfo}`, settings);
+                const data = await response.json();
+
+                return data;
+            }
 
             function consistHour() {
 

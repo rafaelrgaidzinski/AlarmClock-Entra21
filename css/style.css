@@ -101,6 +101,7 @@ html, body {
     grid-column: 1;
     grid-row: 1;
     font-size: 11em;
+    min-width: 39vw;
     display: flex;
     justify-self: flex-start;
     align-self: flex-end;
