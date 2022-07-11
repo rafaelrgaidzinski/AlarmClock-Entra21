@@ -24,15 +24,15 @@
             <main class="clInfoPrincipal">
                 <div class="clInformacoes">
                     
-                    <output class="clHoraCerta" id="horaCerta">12:30:56</output>
+                    <output class="clHoraCerta" id="horaCerta"></output>
                 
-                    <output class="clDataCerta" id="hoje">Fri Jun 17th, 2022</output>
+                    <output class="clDataCerta" id="hoje"></output>
                 
-                    <output class="clMensagem" id="msn">Good Afternoon Mr. Hendrik, its 12:30 pm</output>
+                    <output class="clMensagem" id="msn"></output>
                 
                     <output class="clDescricaoEvento" id="description">It´s time for lunch with the new customers</output>
                 
-                    <button type="button" name="nmBtnAlarme" id="idBtnAlarme" class="clBotaoAlarme" value="Set Alarm"><img src="assets/icons/time_icon.png" alt="Imagem relógio"> <p>Turn Alarm Off</p></button>
+                    <button type="button" name="nmBtnAlarme" id="idBtnAlarme" class="clBotaoAlarme" value="Set Alarm"><img src="assets/icons/time_icon.png" alt="Imagem relógio"> <p>Set Alarm</p></button>
                 
                 </div>
             </main>
@@ -172,12 +172,20 @@
             var fieldTempNow = document.getElementById("tempNow");
             var divWeatherImage = document.querySelector("div[class='clImagemPrevisaoDoTempo']");
 
+            var fieldTime = document.getElementById("horaCerta");
+            var fieldDate = document.getElementById("hoje");
+            var fieldMessage = document.getElementById("msn");
+            var btnAlarm = document.getElementById("idBtnAlarme");
+
             var config = {}; 
             var city = "";
             var weatherForecast = {};
 
+            var time = "";
+            var timeList = [];
+
             document.addEventListener("DOMContentLoaded", async function() {
-                
+
                 config = await getConfig();
                 
                 if (config.value) {
@@ -190,13 +198,27 @@
 
                 weatherForecast = await getClima(city);
                 setInfoWeather(weatherForecast);
+
+                var today = await getHoje();
+                fieldDate.value = today.hoje;
+
+                var message = await getMsn();
+                fieldMessage.value = message.mensagem;
             });
 
+             async function getClima(city) {
+
+                const response = await fetch(`http://localhost:3001/clima?cidade=${city}`);
+                const data = await response.json();
+                
+                return data;
+            }
+
             setInterval(() => {
-                getClimaAgora();
+                updateWeather();
             }, (1000 * 60 * 15));
             
-            async function getClimaAgora() {
+            async function updateWeather() {
                 
                 var weatherForecastNow = await getClima(city);
 
@@ -204,11 +226,11 @@
 
                 keys.forEach(key => {
 
-                    if (weatherForecast[key] != weatherForecastNow[key]) {
+                    if (weatherForecastNow[key] != weatherForecast[key]) {
                         weatherForecast = weatherForecastNow;
                         setInfoWeather(weatherForecast);
                     }
-                    
+
                 });
             }
 
@@ -270,15 +292,91 @@
                 }
 
                 divWeatherImage.appendChild(weatherImage);
-
             }
 
-            async function getClima(city) {
+            async function getHoraCerta() {
 
-                const response = await fetch(`http://localhost:3001/clima?cidade=${city}`);
+                const response = await fetch(`http://localhost:3001/horaCerta`);
+                const data = await response.json();
+
+                return data;
+            }
+
+            setInterval(() => {
+                setClock();
+            }, 1000);
+
+            async function setClock() {
+
+                if (time == "") {
+                    time =  await getHoraCerta();
+                    timeList = time.horaCerta.split(":");
+                } if ((timeList[2] == 0) && (timeList[1] == 0)) {
+                    time = await getHoraCerta();
+                    timeList = time.horaCerta.split(":");
+
+                    var message = await getMsn();
+                    fieldMessage.value = message.mensagem;
+                    
+                    if ((timeList[0] == "00") && (timeList[1] == "00") && (timeList[2] == "00")) {
+                        var today = await getHoje();
+                        fieldDate.value = today.hoje;
+                    }
+                }
+
+                if (config.formatoHora == "12") {
+
+                    if(Number(timeList[0]) > 12) {
+                        timeList[0] = Number(timeList[0]) - 12;
+                    }
+                }
+               
+                if (timeList[2] < 60) {
+                    timeList[2] = Number(timeList[2]) + 1;
+
+                    if(timeList[2] == 60) {
+                        timeList[2] = 0;
+                        timeList[1] = Number(timeList[1]) + 1;
+
+                        if(timeList[1] == 60) {
+                            timeList[1] = 0;
+                            timeList[0] = Number(timeList[0]) + 1;
+                        }
+                    }
+                }
+
+                if ((timeList[0] < 10) && (String(timeList[0]).length == 1)) {
+                    timeList[0] = "0" + timeList[0];
+                }
+
+                if ((timeList[1] < 10) && (String(timeList[1]).length == 1)) {
+                    timeList[1] = "0" + timeList[1];
+                }
+        
+                if ((timeList[2] < 10) && (String(timeList[2]).length == 1)) {
+                    timeList[2] = "0" + timeList[2];
+                }
+
+                var hour = timeList[0] + ":" + timeList[1] + ":" + timeList[2];
+                
+                fieldTime.value = hour;
+            }
+            
+            async function getHoje() {
+
+                const response = await fetch(`http://localhost:3001/hoje`);
                 const data = await response.json();
                 
                 return data;
+            }
+            
+            async function getMsn() {
+
+                const response = await fetch(`http://localhost:3001/message`);
+                const data = await response.json();
+                console.log(data);
+                return data;
+
             }
 
             document.body.addEventListener("click", async function(event) {

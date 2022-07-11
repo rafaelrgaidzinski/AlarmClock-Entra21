@@ -30,7 +30,7 @@ app.get("/clima", async function(req, resp) {
 
 app.get("/horaCerta", function(req, resp) {
 
-   var horaCerta = getHoraCerta()
+   var horaCerta = getHoraCerta();
 
    resp.json(horaCerta);
 });
@@ -89,8 +89,9 @@ async function getMessage() {
     var timeSunsetMinusFourHours = (convertHourToSeconds(timeSunset) - (4 * 3600));
 
     var timeNow = getHoraCerta();
-    var hourFormated = getHourFormat(format, timeNow);
-    var seconds = convertHourToSeconds(timeNow);
+    var hourFormated = getHourFormat(format, timeNow.horaCerta);
+    var seconds = convertHourToSeconds(timeNow.horaCerta);
+    console.log(seconds);
 
     if ((seconds >= convertHourToSeconds("00:00:00")) && (seconds <= convertHourToSeconds("11:59:59"))) {
         message = `Good Morning ${gender}. ${name}, it's ${hourFormated}`;
@@ -145,6 +146,7 @@ function convertHourToSeconds(time) {
 
     const timeList = String(time).split(":");
     let seconds = 0;
+    console.log(timeList);
 
     if(timeList[2]) {
         seconds = Number((timeList[0] * 3600) + (timeList[1] * 60) + (timeList[2] * 1));
@@ -153,6 +155,8 @@ function convertHourToSeconds(time) {
     } else {
         seconds = Number((timeList[0] * 3600));
     }
+
+    console.log(seconds);
     
     return seconds;
 }
@@ -267,7 +271,7 @@ function getHoje() {
     hoje += today.toLocaleDateString("en-US", {day: "numeric"}) + posfixed;
     hoje += today.toLocaleDateString("en-US", {year: "numeric"});
 
-    return hoje;
+    return {hoje: hoje};
 }
 
 function getHoraCerta() {
@@ -293,7 +297,7 @@ function getHoraCerta() {
         hora += ":" + today.getSeconds();
     }
 
-    return hora;
+    return {horaCerta: hora};
 }
 
 async function getClima(city) {
