@@ -92,10 +92,119 @@ app.get("/alarms", async function(req, resp) {
     resp.json(alarms);
 });
 
+app.delete("/alarms", async function(req, resp) {
+
+    var position = req.query.position;
+
+    var alarms = await deleteAlarms(position);
+
+    resp.json(alarms);
+
+});
+
+app.put("/alarms", async function(req, resp) {
+
+    var position = req.query.position;
+    var isAtivo = req.query.isAtivo;
+    
+    var alarms = await putAlarms(position, isAtivo);
+
+    resp.json(alarms);
+
+});
+
+async function putAlarms(position, isAtivo) {
+
+    var alarmStatus = 0;
+    var alarmMessage = "Alarme atualizado com sucesso!";
+
+    if (isAtivo == "true") {
+        isAtivo = true;
+    } else {
+        isAtivo = false;
+    }
+
+    const path = "../files/alarms.json";
+
+    if (fse.existsSync(path)) {
+
+        const fileReaded = await readFile(path);
+
+        try {
+            alarms = JSON.parse(fileReaded);
+
+            alarms[position].isAtivo = isAtivo;
+
+            const fileSaved = await saveFile(path, JSON.stringify(alarms));
+
+            if (fileSaved != "Arquivo salvo com sucesso!") {
+                alarmStatus = 2;
+                alarmMessage = fileSaved;
+                return {status: alarmStatus, mensagem: alarmMessage};
+            }
+
+            return {status: alarmStatus, mensagem: alarmMessage, alarms: alarms};
+
+        } catch {
+            alarmStatus = 2;
+            alarmMessage = fileReaded;
+            return {status: alarmStatus, mensagem: alarmMessage};
+        }
+
+    } else {
+
+        alarmStatus = 1;
+        alarmMessage = "Arquivo não encontrado!";
+        return {status: alarmStatus, mensagem: alarmMessage};
+    }
+
+}
+
+async function deleteAlarms(position) {
+
+    var alarmStatus = 0;
+    var alarmMessage = "Alarme removido com sucesso!";
+
+    const path = "../files/alarms.json";
+
+    if (fse.existsSync(path)) {
+
+        const fileReaded = await readFile(path);
+
+        try {
+            alarms = JSON.parse(fileReaded);
+
+            alarms.splice(position, 1);
+
+            const fileSaved = await saveFile(path, JSON.stringify(alarms));
+
+            if (fileSaved != "Arquivo salvo com sucesso!") {
+                alarmStatus = 2;
+                alarmMessage = fileSaved;
+                return {status: alarmStatus, mensagem: alarmMessage};
+            }
+
+            return {status: alarmStatus, mensagem: alarmMessage, alarms: alarms};
+
+        } catch {
+            alarmStatus = 2;
+            alarmMessage = fileReaded;
+            return {status: alarmStatus, mensagem: alarmMessage};
+        }
+
+    } else {
+
+        alarmStatus = 1;
+        alarmMessage = "Arquivo não encontrado!";
+        return {status: alarmStatus, mensagem: alarmMessage};
+    }
+
+}
+
 async function getAlarms() {
 
     var alarmStatus = 0;
-    var alarmMessage = "Arquivo lido com sucesso!";;
+    var alarmMessage = "Arquivo lido com sucesso!";
 
     const path = "../files/alarms.json";
 
@@ -171,11 +280,16 @@ async function getMessage() {
     var message = "";
 
     var settings = await getConfig();
-    var city = settings.value.cidade;
-    var name = settings.value.nome;
-    var format = settings.value.formatoHora;
-    var gender = settings.value.genero;
-
+    if(settings.value) {
+        var city = settings.value.cidade;
+        var name = settings.value.nome;
+        var format = settings.value.formatoHora;
+        var gender = settings.value.genero;
+    } else {
+        message = "";
+        return {mensagem: message};
+    }
+    
     var weather = await getClima(city);
     var timeSunrise = weather.sunrise.replace(/[^\d:]/g, '');
     var timeSunset = weather.sunset.replace(/[^\d:]/g, '');

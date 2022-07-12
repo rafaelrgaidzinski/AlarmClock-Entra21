@@ -30,9 +30,9 @@
                 
                     <output class="clMensagem" id="msn"></output>
                 
-                    <output class="clDescricaoEvento" id="description">It´s time for lunch with the new customers</output>
+                    <output class="clDescricaoEvento" id="description"></output>
                 
-                    <button type="button" name="nmBtnAlarme" id="idBtnAlarme" class="clBotaoAlarme" value="Set Alarm"><img src="assets/icons/time_icon.png" alt="Imagem relógio"> <p>Set Alarm</p></button>
+                    <button type="button" name="nmBtnAlarme" id="idBtnAlarme" class="clBotaoAlarme" value="Set Alarm"><img src="assets/icons/time_icon.png" alt="Imagem relógio"> <p id="idTextBtnAlarm">Set Alarm</p></button>
                 
                 </div>
             </main>
@@ -105,7 +105,7 @@
 
             <header class="clCabecalhoAlarme">
                 <h1>Alarm</h1>
-                <a href="#idTelaNovoAlarme">new alarm</a>
+                <a href="#idTelaNovoAlarme">New Alarm</a>
             </header>
             
             <main class="clInfoAlarme">
@@ -175,6 +175,8 @@
             var fieldTime = document.getElementById("horaCerta");
             var fieldDate = document.getElementById("hoje");
             var fieldMessage = document.getElementById("msn");
+            var fieldAlarmDescription = document.getElementById("description");
+            var textBtnAlarm = document.getElementById("idTextBtnAlarm");
             var btnAlarm = document.getElementById("idBtnAlarme");
 
             var config = {}; 
@@ -183,7 +185,11 @@
 
             var time = "";
             var timeList = [];
-            var alarms = {};
+            var alarms = [];
+            var alarmsOn = [];
+            var alarmsOnInSeconds = [];
+            var alarmRinging = false;
+            var audio;
 
             document.addEventListener("DOMContentLoaded", async function() {
 
@@ -193,15 +199,15 @@
             async function setInitialInfo() {
 
                 config = await getConfig();
+
+                if (config.value) {
+                    setInfoConfig(config);
+                }
                 
                 if (config.value) {
-                    config = config.value;
+                    city = config.value.cidade;
                 } 
-        
-                if (config.cidade) {
-                    city = config.cidade;
-                }
-
+            
                 weatherForecast = await getClima(city);
                 setInfoWeather(weatherForecast);
 
@@ -214,11 +220,107 @@
                 var message = await getMessage();
                 fieldMessage.value = message.mensagem;
 
-                alarms = await getAlarm();
-                if (alarms.status == 0) {
-                    createAlarms(alarms.alarms);
+                var response = await getAlarm();
+
+                if (response.alarms) {
+                    alarms = response.alarms;
+                    createAlarms(alarms);
                 }
             
+            }
+
+            btnAlarm.addEventListener("click", manageAlarm);
+
+            function manageAlarm() {
+
+                if (alarmRinging) {
+                    audio.pause();
+                    textBtnAlarm.innerHTML = "Set Alarm";
+                    fieldAlarmDescription.value = "";
+                    alarmRinging = false;
+                } else {
+                    var url = location.href;
+                    location.href = "#idTelaAlarme";
+                    history.replaceState(null,null,url);
+                }
+            }
+
+            function ringAlarm(positionIndex) {
+
+                alarmRinging = true;
+
+                audio = new Audio("./assets/sound/universal_pic_tune.mp3");
+                audio.play();
+                audio.loop = true;
+
+                textBtnAlarm.innerHTML = "Turn Alarm Off";
+                fieldAlarmDescription.value = alarmsOn[positionIndex].descricao;
+            }
+
+            function getAlarmsOn(alarmsList) {
+
+                var alarms = [];
+
+                alarmsList.forEach(element => {
+
+                    if (element.isAtivo == true) {
+                        alarms.push(element);
+                    }
+                });
+
+                alarms = orderAlarms(alarms);
+                
+                return alarms;
+            }
+
+            function orderAlarms(alarmsList) {
+
+                alarmsOnInSeconds = [];
+
+                alarmsList.forEach(element => {
+                    
+                    var listTime = element.hora.split(":");
+
+                    if (element.isAm == true) {
+                        alarmsOnInSeconds.push(((listTime[0] * 3600) + (listTime[1] * 60)));
+                    } else {
+                        if (listTime[0] == 12) {
+                            alarmsOnInSeconds.push(((Number(listTime[0]) * 3600) + (listTime[1] * 60)));
+                        } else {
+                            alarmsOnInSeconds.push((((Number(listTime[0]) + 12) * 3600) + (listTime[1] * 60)));
+                        }
+                    }
+                    
+                });
+
+                for (let index = 0; index < alarmsOnInSeconds.length; index++) {
+
+                    var time = alarmsOnInSeconds[index];
+                    var positionIndex = index;
+                    
+                
+                    for (let count = (index + 1); count < alarmsOnInSeconds.length; count++) {
+                        
+                        if (alarmsOnInSeconds[count] < time) {
+                            time = alarmsOnInSeconds[count];
+                            positionIndex = count;
+                        }
+                    }
+                    
+                    if(positionIndex != index) {
+                        var store = alarmsOnInSeconds[index];
+                        alarmsOnInSeconds[index] = time;
+                        alarmsOnInSeconds[positionIndex] = store;
+
+                        store = alarmsList[index];
+                        alarmsList[index] = alarmsList[positionIndex];
+                        alarmsList[positionIndex] = store;
+                    }
+                    
+                }
+
+                return alarmsList;
+
             }
 
              async function getClima(city) {
@@ -337,16 +439,17 @@
                         var today = await getHoje();
                         fieldDate.value = today.hoje;
                     }
-
+                    
                     var message = await getMessage();
                     fieldMessage.value = message.mensagem;
-
                 }
 
-                if (config.formatoHora == "12") {
+                if (config.value) {
+                    if (config.value.formatoHora == "12") {
 
-                    if(Number(timeList[0]) > 12) {
-                        timeList[0] = Number(timeList[0]) - 12;
+                        if(Number(timeList[0]) > 12) {
+                            timeList[0] = Number(timeList[0]) - 12;
+                        }
                     }
                 }
 
@@ -356,6 +459,8 @@
                     if(timeList[2] == 60) {
                         timeList[2] = 0;
                         timeList[1] = Number(timeList[1]) + 1;
+
+                        setNextAlarm(Number(timeList[0]), Number(timeList[1]));
 
                         if(timeList[1] == 60) {
                             timeList[1] = 0;
@@ -379,6 +484,40 @@
                 var hour = timeList[0] + ":" + timeList[1] + ":" + timeList[2];
                 
                 fieldTime.value = hour;
+            }
+
+            function setNextAlarm(hour, minute) {
+
+                var today = new Date();
+                var timeNow = today.getHours();
+
+                var timeNowInSeconds;
+                var nextAlarm = false;
+                var alarmNow;
+                var positionIndex;
+                
+                if (config.value) {
+                    if ((config.value.formatoHora == "12") && (timeNow >= 12) && (hour < 12)) {
+                        hour = hour + 12;
+                    }
+                }
+
+                timeNowInSeconds = ((hour * 3600) + (minute * 60));
+
+                alarmsOnInSeconds.forEach((element, index) => {
+
+                    if ((element >= timeNowInSeconds) && (nextAlarm == false)) {
+                        alarmNow = element;
+                        positionIndex = index;
+                        nextAlarm = true;
+                    }
+                    
+                });
+
+                if (alarmNow == timeNowInSeconds) {
+                    ringAlarm(positionIndex);
+                }
+
             }
             
             async function getHoje() {
@@ -404,7 +543,9 @@
 
                 if (element.id == "idIconeConfiguracao") {
                     const data = await getConfig();
-                    setInfoConfig(data);
+                    if (data.value) {
+                        setInfoConfig(data);
+                    }    
                 }
 
             })
@@ -419,7 +560,52 @@
             var buttonSaveSettings = document.getElementById("idBtnSalvar");
             var fieldMessageSettings = document.getElementById("idMessageSettings");
 
-            buttonSaveSettings.addEventListener("click", postConfig);
+            buttonSaveSettings.addEventListener("click", saveSettings);
+
+            async function saveSettings() {
+
+                const data = await postConfig();
+
+                if (data.mensagem != undefined) {
+
+                    fieldMessageSettings.value = data.mensagem;
+
+                } else {
+
+                    fieldMessageSettings.value = "Informações gravadas com sucesso!";
+
+                    setTimeout(() => {
+                        fieldMessageSettings.value = "";
+                    }, 5000);
+
+                    var newConfig = await getConfig();
+                    var setNewConfig = false;
+
+                    if (config.value) {
+                        if (newConfig.value) {
+
+                            const keys = Object.keys(newConfig.value);
+
+                            keys.forEach(key => {
+
+                                if (config.value[key] != newConfig.value[key]) {
+                                    setNewConfig = true;
+                                }
+                            });
+                        }
+
+                        if (setNewConfig) {
+                            config = newConfig;
+                            setInitialInfo();
+                        }
+                    } else {
+
+                        config = newConfig;
+                        setInitialInfo();
+                    }
+                }
+
+            }
 
             async function getConfig() {
 
@@ -472,15 +658,7 @@
                 const response = await fetch(`http://localhost:3001/config${informations}`, settings);
                 const data = await response.json();
 
-                if (data.mensagem != undefined) {
-                    fieldMessageSettings.value = data.mensagem;
-                } else {
-                    fieldMessageSettings.value = "Informações gravadas com sucesso!";
-                }
-
-                setTimeout(() => {
-                    fieldMessageSettings.value = "";
-                }, 5000);
+                return data;
                 
             }
 
@@ -525,33 +703,76 @@
 
             /* Script tela Alarm */
 
-            document.body.addEventListener("change", function(event) {
+            document.body.addEventListener("click", async function(event) {
 
                 var counter = 0;
                 var element = event.target;
 
                 if (element.className == "clAlarm") {
-                   
-                    alarms.alarms.forEach(alarm => {
-            
-                        counter++;
-
-                        if (element.id == ("idAlarm" + counter)) {
-                            if (alarm.isAtivo == true) {
-                                alarm.isAtivo = false;
-                            } else {
-                                alarm.isAtivo = true;
-                            }
-                        }
-
-                        console.log(alarm);
-                    });
-
                     
+                    var position = element.value;
+                    var isAtivo = alarms[position].isAtivo;
+                    
+                    if (isAtivo == true) {
+                        isAtivo = false;
+                    } else {
+                        isAtivo = true;
+                    }
+                    
+                    var response = await putAlarms(position, isAtivo);
+
+                    if (response.alarms) {
+                        alarms = response.alarms;
+                        createAlarms(alarms);
+                    }
+
+                } else if (element.className == "clBtnRemover") {
+
+                    var position = element.value;
+                    
+                    var response = await deleteAlarm(position);
+
+                    if (response.alarms) {
+                        alarms = response.alarms;
+                        createAlarms(alarms);
+                    }
+
                 }
             });
 
+            async function putAlarms(position, isAtivo) {
+
+                const settings = {method: 'PUT',  
+                                headers: {
+                                            'Content-type': 'application/json'
+                                        }
+                                };
+
+                var response = await fetch(`http://localhost:3001/alarms?position=${position}&isAtivo=${isAtivo}`, settings);
+                var data = await response.json();
+
+                return data;
+
+            }
+
+            async function deleteAlarm(position) {
+
+                const settings = {method: 'DELETE',  
+                                headers: {
+                                            'Content-type': 'application/json'
+                                        }
+                                };
+
+                var response = await fetch(`http://localhost:3001/alarms?position=${position}`, settings);
+                var data = await response.json();
+
+                return data;
+
+            }
+
             function createAlarms(alarmsList) {
+
+                alarmsOn = getAlarmsOn(alarmsList);
 
                 var counter = 0;
                 var infoAlarm = document.getElementsByClassName("clInfoAlarme");
@@ -567,11 +788,15 @@
                     var alarmDiv = document.createElement('div');
                     alarmDiv.className = "clAlarme";
 
+                    var alarmCheckboxLabel = document.createElement('label');
+                    alarmCheckboxLabel.className = "checkbox";
+
                     var alarmCheckbox = document.createElement('input');
                     alarmCheckbox.type = "checkbox";
                     alarmCheckbox.id= "idAlarm" + counter;
                     alarmCheckbox.name = "nmAlarm" + counter;
                     alarmCheckbox.className = "clAlarm";
+                    alarmCheckbox.value = (counter - 1);
 
                     if (element.isAtivo == true) {
                         alarmCheckbox.checked = true;
@@ -579,8 +804,14 @@
                         alarmCheckbox.checked = false;
                     }
 
+                    var alarmCheckboxSpan = document.createElement('span');
+                    
+                    alarmCheckboxLabel.appendChild(alarmCheckbox);
+                    alarmCheckboxLabel.appendChild(alarmCheckboxSpan);
+
                     var alarmLabel = document.createElement('label');
                     alarmLabel.htmlFor = "idAlarm" + counter;
+                    alarmLabel.className = "clLabelHora";
 
                     if (element.isAm == true) {
                         alarmLabel.innerText = element.hora + "am";
@@ -591,9 +822,15 @@
                     var alarmText = document.createElement('p');
                     alarmText.innerText = element.descricao;
 
-                    alarmDiv.appendChild(alarmCheckbox);
+                    var alarmButton = document.createElement('button');
+                    alarmButton.innerText = "Remover";
+                    alarmButton.className = "clBtnRemover";
+                    alarmButton.value = (counter - 1);
+
+                    alarmDiv.appendChild(alarmCheckboxLabel);
                     alarmDiv.appendChild(alarmLabel);
                     alarmDiv.appendChild(alarmText);
+                    alarmDiv.appendChild(alarmButton);
                     infoAlarm[0].appendChild(alarmDiv);
                      
                 });
@@ -626,18 +863,22 @@
                         fieldMessageNewAlarm.value = response.mensagem;
 
                         setTimeout(() => {
-                            fieldMessageNewAlarm.value = "";
-                            fieldHour.value = "";
-                            fieldDescription.value = "";
-                            var fieldPeriod = document.getElementById("idAm");
-                            fieldPeriod.checked = true;
-                            periodSelected = true;
+                           resetFields();
                         }, 5000);
 
                     } else {
 
-                        alarms = getAlarm();
-                        createAlarms(alarms.alarms);
+                        var response = await getAlarm();
+
+                        if (response.alarms) {
+                            alarms = response.alarms;
+                            createAlarms(alarms);
+                        }
+
+                        resetFields();
+                        var url = location.href;
+                        location.href = "#idTelaAlarme";
+                        history.replaceState(null,null,url);
                     }
 
                 } else {
@@ -647,6 +888,15 @@
                         fieldMessageNewAlarm.value = "";
                     }, 5000);
                 } 
+            }
+
+            function resetFields() {
+                fieldMessageNewAlarm.value = "";
+                fieldHour.value = "";
+                fieldDescription.value = "";
+                var fieldPeriod = document.getElementById("idAm");
+                fieldPeriod.checked = true;
+                periodSelected = true;
             }
 
             async function getAlarm() {
@@ -771,7 +1021,6 @@
                     }
                 }
             });
-
 
         </script>
 
