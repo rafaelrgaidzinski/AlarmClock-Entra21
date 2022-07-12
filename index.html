@@ -351,11 +351,39 @@
                 });
             }
 
+            function setInfoTemp(weather) {
+
+                var temperatureScale = "C" 
+
+                if (config.value) {
+                    temperatureScale = config.value.escalaTemperatura;
+                }
+
+                if (temperatureScale == "C") {
+
+                    fieldTempMin.value = "Min: " + weather.tempMin + " °C";
+                    fieldTempMax.value = "Max: " + weather.tempMax + " °C";
+                    fieldTempNow.value = "Now: " + weather.tempNow + " °C";
+
+                } else if (temperatureScale == "F") {
+
+                    fieldTempMin.value = "Min: " + ((Number(weather.tempMin) * 1.8) + 32) + " °F";
+                    fieldTempMax.value = "Max: " + ((Number(weather.tempMax) * 1.8) + 32) + " °F";
+                    fieldTempNow.value = "Now: " + ((Number(weather.tempNow) * 1.8) + 32) + " °F";
+
+                } else if (temperatureScale == "K") {
+
+                    fieldTempMin.value = "Min: " + (Number(weather.tempMin) + 273.15) + " °K";
+                    fieldTempMax.value = "Max: " + (Number(weather.tempMax) + 273.15) + " °K";
+                    fieldTempNow.value = "Now: " + (Number(weather.tempNow) + 273.15) + " °K";
+
+                }
+
+            }
+
             function setInfoWeather(weather) {
 
-                fieldTempMin.value = "Min: " + weather.tempMin + " °C";
-                fieldTempMax.value = "Max: " + weather.tempMax + " °C";
-                fieldTempNow.value = "Now: " + weather.tempNow + " °C";
+                setInfoTemp(weather);
 
                 var weatherImage = document.createElement('img');
                 weatherImage.className = "clIconeTempo";
