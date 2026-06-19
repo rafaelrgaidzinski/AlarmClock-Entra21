@@ -5,13 +5,14 @@ const axios = require("axios").default;
 const removeAccents = require("remove-accents");
 const fs = require("fs/promises");
 const fse = require("fs");
+const path = require("path");
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const SERVER_PORT = process.env.PORT || 3001;
 const API_KEY = process.env.HG_BRASIL_API_KEY;
-const ALARMS_FILE_PATH = "../files/alarms.json";
-const CONFIG_FILE_PATH = "../files/config.json";
+const ALARMS_FILE_PATH = path.join(__dirname, "..", "files", "alarms.json");
+const CONFIG_FILE_PATH = path.join(__dirname, "..", "files", "config.json");
 const MAX_ALARMS = 6;
 
 const VALID_HOUR_FORMATS = ["12", "24"];
@@ -451,7 +452,7 @@ class App {
     if (!API_KEY) {
       console.warn(
         "Aviso: HG_BRASIL_API_KEY não definida. Crie um arquivo .env (veja .env.example) " +
-          "para que a previsão do tempo funcione."
+        "para que a previsão do tempo funcione."
       );
     }
     this.server.listen(SERVER_PORT, () => {
@@ -475,6 +476,8 @@ module.exports = {
   VALID_HOUR_FORMATS,
   VALID_TEMPERATURE_SCALES,
   VALID_GENDERS,
+  ALARMS_FILE_PATH,
+  CONFIG_FILE_PATH,
 };
 
 // ─── Entry Point ──────────────────────────────────────────────────────────────

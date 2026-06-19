@@ -197,6 +197,7 @@ const ClockModule = (() => {
   let activeAlarms = [];
   let activeAlarmsInSeconds = [];
   let hourFormat = "24";
+  let tickIntervalId = null;
 
   function setAlarms(alarmList, format) {
     hourFormat = format;
@@ -278,7 +279,10 @@ const ClockModule = (() => {
   }
 
   function start() {
-    setInterval(tick, 1000);
+    if (tickIntervalId !== null) {
+      clearInterval(tickIntervalId);  // limpa o relógio anterior, se existir
+    }
+    tickIntervalId = setInterval(tick, 1000);
   }
 
   return { start, setAlarms, stopAlarm, isRinging };

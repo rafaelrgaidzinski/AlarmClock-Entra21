@@ -1,7 +1,8 @@
+const path = require("path");
 const { AlarmService, MAX_ALARMS } = require("../server/server");
 const { FakeFileRepository } = require("./helpers/fakeFileRepository");
 
-const ALARMS_PATH = "../files/alarms.json";
+const ALARMS_PATH = path.join(__dirname, "..", "files", "alarms.json");
 
 function makeAlarm(hour = "06:30", description = "Acordar") {
   return { isActive: true, hour, isAm: true, description };

@@ -1,7 +1,8 @@
+const path = require("path");
 const { ConfigService } = require("../server/server");
 const { FakeFileRepository } = require("./helpers/fakeFileRepository");
 
-const CONFIG_PATH = "../files/config.json";
+const CONFIG_PATH = path.join(__dirname, "..", "files", "config.json");
 
 function validConfig(overrides = {}) {
   return {
