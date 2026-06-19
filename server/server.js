@@ -1,571 +1,487 @@
+require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
-const { default: axios } = require("axios");
-const { log } = require("console");
+const axios = require("axios").default;
 const removeAccents = require("remove-accents");
 const fs = require("fs/promises");
 const fse = require("fs");
 
-const app = express();
-
-const porta = 3001;
-app.listen(porta, function(){
-    console.log(`Servidor rodando na porta ${porta}`);
-});
-
-app.use(function(req, resp, next){
-    resp.header("Access-Control-Allow-Origin", "*");
-
-    app.use(cors());
-    next();
-});
-
-app.get("/clima", async function(req, resp) {
-
-    var city = req.query.cidade;
-
-    var weather = await getClima(city);
-    
-    resp.json(weather);
-});
-
-app.get("/horaCerta", function(req, resp) {
-
-   var horaCerta = getHoraCerta();
-
-   resp.json(horaCerta);
-});
-
-app.get("/hoje", function(req, resp) {
-
-    var hoje = getHoje();
-
-    resp.json(hoje);
-});
-
-app.post("/config", async function(req, resp) {
-
-    var hourFormat = req.query.formatoHora;
-    var temperatureScale = req.query.escalaTemperatura;
-    var city = req.query.cidade;
-    var gender = req.query.genero;
-    var name = req.query.nome;
-
-    var status = await postConfig(hourFormat, temperatureScale, city, gender, name);
-    
-    resp.json(status);
-});
-
-app.get("/config", async function(req, resp) {
-
-    var settings = await getConfig();
-
-    resp.json(settings);
-
-});
-
-app.get("/message", async function(req, resp) {
-
-    var message = await getMessage();
-
-    resp.json(message);
-
-});
-
-app.post("/alarms", async function(req, resp) {
-
-    var isActive = req.query.isAtivo;
-    var hour = req.query.hora;
-    var period = req.query.isAm;
-    var description = req.query.descricao;
-
-    var status = await postAlarm(isActive, hour, period, description);
-    
-    resp.json(status);
-
-});
-
-app.get("/alarms", async function(req, resp) {
-
-    var alarms = await getAlarms();
-
-    resp.json(alarms);
-});
-
-app.delete("/alarms", async function(req, resp) {
-
-    var position = req.query.position;
-
-    var alarms = await deleteAlarms(position);
-
-    resp.json(alarms);
-
-});
-
-app.put("/alarms", async function(req, resp) {
-
-    var position = req.query.position;
-    var isAtivo = req.query.isAtivo;
-    
-    var alarms = await putAlarms(position, isAtivo);
-
-    resp.json(alarms);
-
-});
-
-async function putAlarms(position, isAtivo) {
-
-    var alarmStatus = 0;
-    var alarmMessage = "Alarme atualizado com sucesso!";
-
-    if (isAtivo == "true") {
-        isAtivo = true;
-    } else {
-        isAtivo = false;
-    }
-
-    const path = "../files/alarms.json";
-
-    if (fse.existsSync(path)) {
-
-        const fileReaded = await readFile(path);
-
-        try {
-            alarms = JSON.parse(fileReaded);
-
-            alarms[position].isAtivo = isAtivo;
-
-            const fileSaved = await saveFile(path, JSON.stringify(alarms));
-
-            if (fileSaved != "Arquivo salvo com sucesso!") {
-                alarmStatus = 2;
-                alarmMessage = fileSaved;
-                return {status: alarmStatus, mensagem: alarmMessage};
-            }
-
-            return {status: alarmStatus, mensagem: alarmMessage, alarms: alarms};
-
-        } catch {
-            alarmStatus = 2;
-            alarmMessage = fileReaded;
-            return {status: alarmStatus, mensagem: alarmMessage};
-        }
-
-    } else {
-
-        alarmStatus = 1;
-        alarmMessage = "Arquivo não encontrado!";
-        return {status: alarmStatus, mensagem: alarmMessage};
-    }
-
-}
-
-async function deleteAlarms(position) {
-
-    var alarmStatus = 0;
-    var alarmMessage = "Alarme removido com sucesso!";
-
-    const path = "../files/alarms.json";
-
-    if (fse.existsSync(path)) {
-
-        const fileReaded = await readFile(path);
-
-        try {
-            alarms = JSON.parse(fileReaded);
-
-            alarms.splice(position, 1);
-
-            const fileSaved = await saveFile(path, JSON.stringify(alarms));
-
-            if (fileSaved != "Arquivo salvo com sucesso!") {
-                alarmStatus = 2;
-                alarmMessage = fileSaved;
-                return {status: alarmStatus, mensagem: alarmMessage};
-            }
-
-            return {status: alarmStatus, mensagem: alarmMessage, alarms: alarms};
-
-        } catch {
-            alarmStatus = 2;
-            alarmMessage = fileReaded;
-            return {status: alarmStatus, mensagem: alarmMessage};
-        }
-
-    } else {
-
-        alarmStatus = 1;
-        alarmMessage = "Arquivo não encontrado!";
-        return {status: alarmStatus, mensagem: alarmMessage};
-    }
-
-}
-
-async function getAlarms() {
-
-    var alarmStatus = 0;
-    var alarmMessage = "Arquivo lido com sucesso!";
-
-    const path = "../files/alarms.json";
-
-    if (fse.existsSync(path)) {
-
-        const fileReaded = await readFile(path);
-
-        try {
-            alarms = JSON.parse(fileReaded);
-            return {status: alarmStatus, mensagem: alarmMessage, alarms: alarms};
-
-        } catch {
-            alarmStatus = 2;
-            alarmMessage = fileReaded;
-            return {status: alarmStatus, mensagem: alarmMessage};
-        }
-    } else {
-
-        alarmStatus = 1;
-        alarmMessage = "Arquivo não encontrado!";
-        return {status: alarmStatus, mensagem: alarmMessage};
-    }
-    
-}
-
-async function postAlarm(isActive, hour, period, description) {
-
-    var alarmStatus = 0;
-    var alarmMessage = "";
-    var alarms = [];
-
-    var active = (isActive === "true");
-    var periodSelected = (period === "true");
-
-    var alarm = {isAtivo: active, hora: hour, isAm: periodSelected, descricao: description};    
-
-    const path = "../files/alarms.json";
-
-    if (fse.existsSync(path)) {
-
-        const fileReaded = await readFile(path);
-
-        try {
-            alarms = JSON.parse(fileReaded);
-        } catch {
-            alarmStatus = 2;
-            alarmMessage = fileReaded;
-            return {status: alarmStatus, mensagem: alarmMessage};
-        }
-    }
-    
-    if (alarms.length < 6 ) {
-        alarms.push(alarm);
-    } else {
-        alarmStatus = 1;
-        alarmMessage = "O número máximo de alarmes já foi cadastrado";
-        return {status: alarmStatus, mensagem: alarmMessage};
-    }
-    
-    const fileSaved = await saveFile(path, JSON.stringify(alarms));
-
-    if (fileSaved != "Arquivo salvo com sucesso!") {
-        alarmStatus = 2;
-        alarmMessage = fileSaved;
-        return {status: alarmStatus, mensagem: alarmMessage};
-    }
-
-    return {status: alarmStatus}  
-}
-
-async function getMessage() {
-
-    var message = "";
-
-    var settings = await getConfig();
-    if(settings.value) {
-        var city = settings.value.cidade;
-        var name = settings.value.nome;
-        var format = settings.value.formatoHora;
-        var gender = settings.value.genero;
-    } else {
-        message = "";
-        return {mensagem: message};
-    }
-    
-    var weather = await getClima(city);
-    var timeSunrise = weather.sunrise.replace(/[^\d:]/g, '');
-    var timeSunset = weather.sunset.replace(/[^\d:]/g, '');
-    
-    var timeSunsetInSeconds = (convertHourToSeconds(timeSunset) + (12 * 3600));
-    var timeSunsetMinusFourHours = (convertHourToSeconds(timeSunset) + (8 * 3600));
-
-    var timeNow = getHoraCerta();
-    
-    var timeNowInseconds = convertHourToSeconds(timeNow.horaCerta);
-    var morningStart = convertHourToSeconds("00:00:00");
-    var morningFinish = convertHourToSeconds("11:59:59");
-    var afternoonStarts = convertHourToSeconds("12:00:00");
-    var nightFinish = convertHourToSeconds("23:59:59");
-
-    var hourFormated = getHourFormat(format, timeNow.horaCerta);
-   
-    if ((timeNowInseconds >= morningStart) && (timeNowInseconds <= morningFinish)) {
-
-        message = `Good Morning ${gender}. ${name}, it's ${hourFormated}`;
-
-    } else if ((timeNowInseconds >= afternoonStarts) && (timeNowInseconds <= timeSunsetMinusFourHours)) {
-
-        message = `Good Afternoon ${gender}. ${name}, it's ${hourFormated}`;
-
-    } else if ((timeNowInseconds >= (timeSunsetMinusFourHours + 1)) && (timeNowInseconds <= timeSunsetInSeconds)) {
-
-        message = `Good Evening ${gender}. ${name}, it's ${hourFormated}`;
-
-    } else if ((timeNowInseconds >= (timeSunsetInSeconds + 1)) && (timeNowInseconds <= nightFinish)) {
-
-        message = `Good Night ${gender}. ${name}, it's ${hourFormated} tomorrow the sun will rises at ${timeSunrise} am`;
-
-    }
-
-    var response = {mensagem: message};
-
-    return response;
-}
-
-function getHourFormat(format, time) {
-
-    var hourFormated = "";
-    var timeList = String(time).split(":");
-
-    if (format == 12) {
-
-        if (timeList[0] > 12) {
-            timeList[0] = timeList[0] - 12;
-            if (timeList[0] < 10) {
-                timeList[0] = "0" + timeList[0];
-            }
-            hourFormated = timeList[0] + ":" + timeList[1] + ":" + timeList[2] + " pm";
-        } else {
-            if (timeList[0] < 10) {
-                timeList[0] = "0" + timeList[0];
-            }
-            hourFormated = timeList[0] + ":" + timeList[1] + ":" + timeList[2] + " am";
-        }
-
-    } else {
-
-        if ((timeList[1] == "00") && (timeList[2] == "00")) {
-            hourFormated = time + " o'Clock";
-        } else {
-            hourFormated = time + " hours";
-        }
-        
-    }
-
-    return hourFormated;
-
-}
-
-function convertHourToSeconds(time) {
-
-    const timeList = String(time).split(":");
-    let seconds = 0;
-
-    if(timeList[2]) {
-        seconds = Number((timeList[0] * 3600) + (timeList[1] * 60) + (timeList[2] * 1));
-    } else if (timeList[1]) {
-        seconds = Number((timeList[0] * 3600) + (timeList[1] * 60));
-    } else {
-        seconds = Number((timeList[0] * 3600));
-    }
-    
-    return seconds;
-}
-
-async function getConfig() {
-
-    var configStatus;
-    var configMessage;
-    var configValue;
-    var settings;
-
-    const file = await readFile("../files/config.json");
-    
+// ─── Constants ────────────────────────────────────────────────────────────────
+
+const SERVER_PORT = process.env.PORT || 3001;
+const API_KEY = process.env.HG_BRASIL_API_KEY;
+const ALARMS_FILE_PATH = "../files/alarms.json";
+const CONFIG_FILE_PATH = "../files/config.json";
+const MAX_ALARMS = 6;
+
+const VALID_HOUR_FORMATS = ["12", "24"];
+const VALID_TEMPERATURE_SCALES = ["C", "F", "K"];
+const VALID_GENDERS = ["Mr", "Mrs"];
+
+const CITIES_WOEID = [
+  { city: "criciuma", woeid: 455856 },
+  { city: "curitibanos", woeid: 456168 },
+  { city: "imarui", woeid: 459654 },
+  { city: "palhoca", woeid: 460341 },
+  { city: "maravilha", woeid: 460067 },
+];
+
+// ─── FileRepository ───────────────────────────────────────────────────────────
+// Responsible for all file I/O operations.
+
+class FileRepository {
+  async read(path) {
     try {
-        configValue = JSON.parse(file);
-        configStatus = 0;
-        configMessage = "Arquivo lido com sucesso!";
-        settings = {status: configStatus, mensagem: configMessage, value: configValue};
+      return await fs.readFile(path, { encoding: "utf8" });
     } catch (err) {
-        configStatus = 2;
-        configMessage = file;
-        settings = {status: configStatus, mensagem: configMessage};
+      throw new Error(`Failed to read file: ${err.message}`);
     }
+  }
 
-    return settings;
-}
-
-async function readFile(path) {
-
+  async write(path, content) {
     try {
-        const file = await fs.readFile(path, {encoding: "utf8"});
-        return file;
+      await fs.writeFile(path, content);
     } catch (err) {
-        return err.message;
+      throw new Error(`Failed to write file: ${err.message}`);
     }
+  }
 
+  exists(path) {
+    return fse.existsSync(path);
+  }
+
+  async readJson(path) {
+    const content = await this.read(path);
+    return JSON.parse(content);
+  }
+
+  async writeJson(path, data) {
+    await this.write(path, JSON.stringify(data));
+  }
 }
 
-async function postConfig(hourFormat, temperatureScale, city, gender, name) {
+// ─── AlarmService ─────────────────────────────────────────────────────────────
+// Responsible for all alarm CRUD operations.
 
-    var status = 0;
-    var message = "";
-    var configObject = {};
-    var fileStatus = "";
-    var response = {};
+class AlarmService {
+  constructor(fileRepository) {
+    this.fileRepository = fileRepository;
+  }
 
-    if ((hourFormat != "12") && (hourFormat != "24")) {
-        status = 1;
-        message = "Por favor informe um formato de hora válido";
-    } else if ((temperatureScale != "C") && (temperatureScale != "F") && (temperatureScale != "K")) {
-        status = 1;
-        message = "Por favor informe uma escala de temperatura válida";
-    } else if ((gender != "Mr") && (gender != "Mrs")) {
-        status = 1;
-        message = "Por favor informe um gênero válido";
-    } else if (city == "") {
-        status = 1;
-        message = "Campo cidade não informado";
-    } else if (name == "") {
-        status = 1;
-        message = "Campo nome não informado";
-    } else if (status == 0) {
-        configObject = {formatoHora: hourFormat, escalaTemperatura: temperatureScale, cidade: city, genero: gender, nome: name};
-        fileStatus = await saveFile( "../files/config.json" ,JSON.stringify(configObject));
-        
-        if(fileStatus != "Arquivo salvo com sucesso!") {
-            status = 2;
-            message = fileStatus;
-        }
+  async getAll() {
+    if (!this.fileRepository.exists(ALARMS_FILE_PATH)) {
+      return [];
+    }
+    return await this.fileRepository.readJson(ALARMS_FILE_PATH);
+  }
+
+  async create({ isActive, hour, isAm, description }) {
+    const alarms = this.fileRepository.exists(ALARMS_FILE_PATH)
+      ? await this.fileRepository.readJson(ALARMS_FILE_PATH)
+      : [];
+
+    if (alarms.length >= MAX_ALARMS) {
+      throw new Error(`Maximum number of alarms (${MAX_ALARMS}) already registered.`);
     }
 
-    if (status == 0) {
-        response = {status: status};
-    } else {
-        response = {status: status, mensagem: message};
-    }
+    const newAlarm = { isActive, hour, isAm, description };
+    alarms.push(newAlarm);
+    await this.fileRepository.writeJson(ALARMS_FILE_PATH, alarms);
+    return alarms;
+  }
 
-    return response; 
+  async remove(position) {
+    const alarms = await this._loadExistingAlarms();
+    alarms.splice(position, 1);
+    await this.fileRepository.writeJson(ALARMS_FILE_PATH, alarms);
+    return alarms;
+  }
+
+  async updateActiveStatus(position, isActive) {
+    const alarms = await this._loadExistingAlarms();
+    alarms[position].isActive = isActive;
+    await this.fileRepository.writeJson(ALARMS_FILE_PATH, alarms);
+    return alarms;
+  }
+
+  async _loadExistingAlarms() {
+    if (!this.fileRepository.exists(ALARMS_FILE_PATH)) {
+      throw new Error("Alarms file not found.");
+    }
+    return await this.fileRepository.readJson(ALARMS_FILE_PATH);
+  }
 }
 
-async function saveFile(path, info) {
+// ─── ConfigService ────────────────────────────────────────────────────────────
+// Responsible for reading and saving user configuration.
 
+class ConfigService {
+  constructor(fileRepository) {
+    this.fileRepository = fileRepository;
+  }
+
+  async get() {
+    return await this.fileRepository.readJson(CONFIG_FILE_PATH);
+  }
+
+  async save({ hourFormat, temperatureScale, city, gender, name }) {
+    this._validate({ hourFormat, temperatureScale, city, gender, name });
+
+    const config = {
+      hourFormat,
+      temperatureScale,
+      city,
+      gender,
+      name,
+    };
+
+    await this.fileRepository.writeJson(CONFIG_FILE_PATH, config);
+    return config;
+  }
+
+  _validate({ hourFormat, temperatureScale, city, gender, name }) {
+    if (!VALID_HOUR_FORMATS.includes(hourFormat)) {
+      throw new Error("Please provide a valid time format (12 or 24).");
+    }
+    if (!VALID_TEMPERATURE_SCALES.includes(temperatureScale)) {
+      throw new Error("Please provide a valid temperature scale (C, F or K).");
+    }
+    if (!VALID_GENDERS.includes(gender)) {
+      throw new Error("Please provide a valid gender (Mr or Mrs).");
+    }
+    if (!city) {
+      throw new Error("City field is required.");
+    }
+    if (!name) {
+      throw new Error("Name field is required.");
+    }
+  }
+}
+
+// ─── WeatherService ───────────────────────────────────────────────────────────
+// Responsible for fetching weather data from external API.
+
+class WeatherService {
+  constructor(httpClient = axios) {
+    this.httpClient = httpClient;
+  }
+
+  async getByCity(cityName) {
+    const woeid = await this._resolveWoeid(cityName);
+    return await this._fetchWeather(woeid);
+  }
+
+  async _resolveWoeid(cityName) {
+    const normalizedCity = removeAccents(String(cityName).toLowerCase());
+    const found = CITIES_WOEID.find((entry) => entry.city === normalizedCity);
+
+    if (found) return found.woeid;
+
+    const userLocation = await this._fetchUserLocation();
+    return userLocation.woeid;
+  }
+
+  async _fetchWeather(woeid) {
+    const url = `https://api.hgbrasil.com/weather?format=json-cors&key=${API_KEY}&woeid=${woeid}&fields=only_results,city_name,temp,condition_slug,sunrise,sunset,forecast,max,min&array_limit=1`;
+    const { data } = await this.httpClient.get(url);
+
+    return {
+      tempMin: data.forecast[0].min,
+      tempMax: data.forecast[0].max,
+      tempNow: data.temp,
+      conditionSlug: data.condition_slug,
+      sunrise: data.sunrise,
+      sunset: data.sunset,
+    };
+  }
+
+  async _fetchUserLocation() {
+    const url = `https://api.hgbrasil.com/geoip?format=json-cors&key=${API_KEY}&address=remote&precision=false&fields=only_results,woeid`;
+    const { data } = await this.httpClient.get(url);
+    return data;
+  }
+}
+
+// ─── ClockService ─────────────────────────────────────────────────────────────
+// Responsible for current time and date formatting.
+
+class ClockService {
+  getCurrentTime() {
+    const now = new Date();
+    return {
+      hours: this._pad(now.getHours()),
+      minutes: this._pad(now.getMinutes()),
+      seconds: this._pad(now.getSeconds()),
+    };
+  }
+
+  getFormattedTime() {
+    const { hours, minutes, seconds } = this.getCurrentTime();
+    return `${hours}:${minutes}:${seconds}`;
+  }
+
+  getFormattedDate() {
+    const today = new Date();
+    const day = today.getDate();
+    const suffix = this._getDaySuffix(day);
+
+    const weekday = today.toLocaleDateString("en-US", { weekday: "short" });
+    const month = today.toLocaleDateString("en-US", { month: "short" });
+    const year = today.toLocaleDateString("en-US", { year: "numeric" });
+
+    return `${weekday} ${month} ${day}${suffix} ${year}`;
+  }
+
+  convertTimeToSeconds(time) {
+    const [h = 0, m = 0, s = 0] = String(time).split(":").map(Number);
+    return h * 3600 + m * 60 + s;
+  }
+
+  formatWithHourStyle(hourFormat, time) {
+    const parts = String(time).split(":");
+    const [rawHour, minutes, seconds] = parts.map(Number);
+    let hour = rawHour;
+
+    if (String(hourFormat) === "12") {
+      const period = hour >= 12 ? "pm" : "am";
+      if (hour > 12) hour -= 12;
+      return `${this._pad(hour)}:${this._pad(minutes)}:${this._pad(seconds)} ${period}`;
+    }
+
+    if (minutes === 0 && seconds === 0) return `${time} o'Clock`;
+    return `${time} hours`;
+  }
+
+  _getDaySuffix(day) {
+    if ([1, 21, 31].includes(day)) return "st, ";
+    if ([2, 22].includes(day)) return "nd, ";
+    if ([3, 23].includes(day)) return "rd, ";
+    return "th, ";
+  }
+
+  _pad(value) {
+    return String(value).padStart(2, "0");
+  }
+}
+
+// ─── MessageService ───────────────────────────────────────────────────────────
+// Responsible for building the personalized greeting message.
+
+class MessageService {
+  constructor(configService, weatherService, clockService) {
+    this.configService = configService;
+    this.weatherService = weatherService;
+    this.clockService = clockService;
+  }
+
+  async buildGreeting() {
+    const config = await this.configService.get().catch(() => null);
+    if (!config) return "";
+
+    const { city, name, hourFormat, gender } = config;
+    const weather = await this.weatherService.getByCity(city);
+    const timeNow = this.clockService.getFormattedTime();
+    const formatted = this.clockService.formatWithHourStyle(hourFormat, timeNow);
+
+    const nowInSeconds = this.clockService.convertTimeToSeconds(timeNow);
+    const sunsetInSeconds = this.clockService.convertTimeToSeconds(weather.sunset) + 12 * 3600;
+    const eveningStart = this.clockService.convertTimeToSeconds(weather.sunset) + 8 * 3600;
+
+    const NOON = this.clockService.convertTimeToSeconds("12:00:00");
+    const END_OF_DAY = this.clockService.convertTimeToSeconds("23:59:59");
+
+    if (nowInSeconds < NOON) {
+      return `Good Morning ${gender}. ${name}, it's ${formatted}`;
+    }
+    if (nowInSeconds < eveningStart) {
+      return `Good Afternoon ${gender}. ${name}, it's ${formatted}`;
+    }
+    if (nowInSeconds <= sunsetInSeconds) {
+      return `Good Evening ${gender}. ${name}, it's ${formatted}`;
+    }
+    if (nowInSeconds <= END_OF_DAY) {
+      return `Good Night ${gender}. ${name}, it's ${formatted} — tomorrow the sun rises at ${weather.sunrise} am`;
+    }
+
+    return "";
+  }
+}
+
+// ─── App (Express setup) ──────────────────────────────────────────────────────
+// Responsible for wiring routes to services.
+
+class App {
+  constructor() {
+    this.server = express();
+    this.fileRepository = new FileRepository();
+    this.alarmService = new AlarmService(this.fileRepository);
+    this.configService = new ConfigService(this.fileRepository);
+    this.weatherService = new WeatherService();
+    this.clockService = new ClockService();
+    this.messageService = new MessageService(
+      this.configService,
+      this.weatherService,
+      this.clockService
+    );
+
+    this._applyMiddleware();
+    this._registerRoutes();
+  }
+
+  _applyMiddleware() {
+    this.server.use(cors());
+    this.server.use((req, res, next) => {
+      res.header("Access-Control-Allow-Origin", "*");
+      next();
+    });
+  }
+
+  _registerRoutes() {
+    this.server.get("/weather", this._handleGetWeather.bind(this));
+    this.server.get("/time", this._handleGetTime.bind(this));
+    this.server.get("/date", this._handleGetDate.bind(this));
+    this.server.get("/message", this._handleGetMessage.bind(this));
+
+    this.server.get("/config", this._handleGetConfig.bind(this));
+    this.server.post("/config", this._handlePostConfig.bind(this));
+
+    this.server.get("/alarms", this._handleGetAlarms.bind(this));
+    this.server.post("/alarms", this._handlePostAlarm.bind(this));
+    this.server.delete("/alarms", this._handleDeleteAlarm.bind(this));
+    this.server.put("/alarms", this._handlePutAlarm.bind(this));
+  }
+
+  // ── Route Handlers ──────────────────────────────────────────────────────────
+
+  async _handleGetWeather(req, res) {
     try {
-        await fs.writeFile(path , info);
-        var message = "Arquivo salvo com sucesso!";
-        return message; 
+      const weather = await this.weatherService.getByCity(req.query.city);
+      res.json(weather);
     } catch (err) {
-        return err.message;
-    }           
-        
+      res.status(500).json({ error: err.message });
+    }
+  }
+
+  _handleGetTime(req, res) {
+    res.json({ time: this.clockService.getFormattedTime() });
+  }
+
+  _handleGetDate(req, res) {
+    res.json({ date: this.clockService.getFormattedDate() });
+  }
+
+  async _handleGetMessage(req, res) {
+    try {
+      const message = await this.messageService.buildGreeting();
+      res.json({ message });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  }
+
+  async _handleGetConfig(req, res) {
+    try {
+      const config = await this.configService.get();
+      res.json(config);
+    } catch (err) {
+      res.status(404).json({ error: "Configuration not found." });
+    }
+  }
+
+  async _handlePostConfig(req, res) {
+    try {
+      const config = await this.configService.save({
+        hourFormat: req.query.hourFormat,
+        temperatureScale: req.query.temperatureScale,
+        city: req.query.city,
+        gender: req.query.gender,
+        name: req.query.name,
+      });
+      res.json(config);
+    } catch (err) {
+      res.status(400).json({ error: err.message });
+    }
+  }
+
+  async _handleGetAlarms(req, res) {
+    try {
+      const alarms = await this.alarmService.getAll();
+      res.json(alarms);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  }
+
+  async _handlePostAlarm(req, res) {
+    try {
+      const alarms = await this.alarmService.create({
+        isActive: req.query.isActive === "true",
+        hour: req.query.hour,
+        isAm: req.query.isAm === "true",
+        description: req.query.description,
+      });
+      res.json(alarms);
+    } catch (err) {
+      res.status(400).json({ error: err.message });
+    }
+  }
+
+  async _handleDeleteAlarm(req, res) {
+    try {
+      const alarms = await this.alarmService.remove(Number(req.query.position));
+      res.json(alarms);
+    } catch (err) {
+      res.status(400).json({ error: err.message });
+    }
+  }
+
+  async _handlePutAlarm(req, res) {
+    try {
+      const alarms = await this.alarmService.updateActiveStatus(
+        Number(req.query.position),
+        req.query.isActive === "true"
+      );
+      res.json(alarms);
+    } catch (err) {
+      res.status(400).json({ error: err.message });
+    }
+  }
+
+  start() {
+    if (!API_KEY) {
+      console.warn(
+        "Aviso: HG_BRASIL_API_KEY não definida. Crie um arquivo .env (veja .env.example) " +
+          "para que a previsão do tempo funcione."
+      );
+    }
+    this.server.listen(SERVER_PORT, () => {
+      console.log(`Server running on port ${SERVER_PORT}`);
+    });
+  }
+}
+
+// ─── Exports ──────────────────────────────────────────────────────────────────
+// Exporting the classes makes them importable by the test suite.
+
+module.exports = {
+  FileRepository,
+  AlarmService,
+  ConfigService,
+  WeatherService,
+  ClockService,
+  MessageService,
+  App,
+  MAX_ALARMS,
+  VALID_HOUR_FORMATS,
+  VALID_TEMPERATURE_SCALES,
+  VALID_GENDERS,
 };
 
-function getHoje() {
+// ─── Entry Point ──────────────────────────────────────────────────────────────
+// Only start the server when this file is run directly (node server.js),
+// not when it is imported by the tests.
 
-    var hoje;
-    var today = new Date();
-    var day = today.getDate();
-    var posfixed;
-
-    if ((day == 1) || (day == 21) || (day == 31)) {
-        posfixed = "st, ";
-    } else if ((day == 2) || (day == 22)) {
-        posfixed = "nd, ";
-    } else if ((day == 3) ||(day == 23)) {
-        posfixed = "rd, ";
-    } else {
-        posfixed = "th, ";
-    }
-
-    hoje = today.toLocaleDateString("en-US", {weekday: "short"}) + " ";
-    hoje += today.toLocaleDateString("en-US", {month: "short"}) + " ";
-    hoje += today.toLocaleDateString("en-US", {day: "numeric"}) + posfixed;
-    hoje += today.toLocaleDateString("en-US", {year: "numeric"});
-
-    return {hoje: hoje};
+if (require.main === module) {
+  const app = new App();
+  app.start();
 }
-
-function getHoraCerta() {
-
-    var hora;
-    var today = new Date();
-
-    if (String(today.getHours()).length == 1) {
-        hora = "0" + today.getHours();
-    } else {
-        hora = today.getHours();
-    }
-
-    if(String(today.getMinutes()).length == 1) {
-        hora += ":0" + today.getMinutes();
-    } else {
-        hora += ":" + today.getMinutes();
-    }
-
-    if (String(today.getSeconds()).length == 1) {
-        hora += ":0" + today.getSeconds();
-    } else {
-        hora += ":" + today.getSeconds();
-    }
-
-    return {horaCerta: hora};
-}
-
-async function getClima(city) {
-
-    var woeid;
-    const key = "dd71bef5";
-    const citiesWOEID = [{cidade:"criciuma", woeid:455856}, {cidade:"curitibanos", woeid:456168}, {cidade:"imarui", woeid:459654}, 
-                        {cidade:"palhoca", woeid:460341}, {cidade:"maravilha", woeid: 460067}];
-                       
-    city = removeAccents(String(city).toLowerCase());
-    
-    citiesWOEID.forEach(element => {
-        if (element.cidade == city){
-            woeid = element.woeid;
-        }
-    });
-
-    if (woeid == undefined) {
-        var userLocation = await getUserLocation();
-        woeid = userLocation.data.woeid;
-    }
-
-    var axios = require("axios").default;
-
-    var requisition = {
-        method: "GET",
-        url: `https://api.hgbrasil.com/weather?format=json-cors&key=${key}&woeid=${woeid}&fields=only_results,city_name,temp,condition_slug,sunrise,sunset,forecast,max,min,sunrise&array_limit=1`
-    }
-
-    var weather = await axios.request(requisition);
-
-    return {tempMin: weather.data.forecast[0].min, tempMax: weather.data.forecast[0].max, tempNow: weather.data.temp, 
-            condition_slug: weather.data.condition_slug, sunrise: weather.data.sunrise, sunset: weather.data.sunset};
-}
-
-async function getUserLocation(){
-
-    const key = "dd71bef5";
-
-    var axios = require("axios").default;
-
-    var requisition = {
-        method: "GET",
-        url: `https://api.hgbrasil.com/geoip?format=json-cors&key=${key}&address=remote&precision=false&fields=only_results,woeid`
-    }
-
-    var woeidLocation = await axios.request(requisition);
-
-    return woeidLocation;
-
-}
-

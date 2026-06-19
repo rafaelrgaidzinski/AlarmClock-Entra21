@@ -1,1056 +1,180 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <meta http-equiv="X-UA-Compatible" content="ie=edge">
-        <link rel="stylesheet" href="css/style.css">
-        <title>Alarm Clock</title>
-    </head>
-    <body>
-        <section class="clTelaPrincipal" id="idTelaPrincipal">
 
-            <header class="clCabecalhoPrincipal">
-                <div class="clPrevisaoDoTempo">
-                    <output class="clTemperaturaMinima" id="tempMin"></output>
-                    <output class="clTemperaturaMáxima" id="tempMax"></output>
-                    <output class="clTemperaturaAtual" id="tempNow"></output>
-                </div>
-                <div class="clImagemPrevisaoDoTempo">
-                    
-                </div>
-            </header>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="css/style.css">
+    <title>Alarm Clock</title>
+</head>
 
-            <main class="clInfoPrincipal">
-                <div class="clInformacoes">
-                    
-                    <output class="clHoraCerta" id="horaCerta"></output>
-                
-                    <output class="clDataCerta" id="hoje"></output>
-                
-                    <output class="clMensagem" id="msn"></output>
-                
-                    <output class="clDescricaoEvento" id="description"></output>
-                
-                    <button type="button" name="nmBtnAlarme" id="idBtnAlarme" class="clBotaoAlarme" value="Set Alarm"><img src="assets/icons/time_icon.png" alt="Imagem relógio"> <p id="idTextBtnAlarm">Set Alarm</p></button>
-                
-                </div>
-            </main>
+<body>
+    <section class="clTelaPrincipal" id="idTelaPrincipal">
 
-            <footer class="clRodapePrincipal">
-                <a href="#idTelaConfiguração" class="clIconeConfiguracao"><img id="idIconeConfiguracao" alt="home" src="./assets/icons/configuration_settings_icon3.png"></a>
-            </footer>
-        </section>
-
-        <section class="clTelaConfiguração" id="idTelaConfiguração">
-            
-            <header class="clCabecalhoConfiguracao">
-                <h1>Config</h1>
-            </header>
-            
-            <main class="clInfoConfiguracao">
-                <form class="clFormularioConfiguracao">
-                    <div class="clLabelFormato">
-                        <label for="formatoHora">Time Format</label>
-                    </div>
-                    <div class="clFormato">
-                        <input type="radio" id="idFormato12" name="formatoHora" value="12" checked>
-                        <label for="idFormato12" class="formatoHora">12</label>
-                        <input type="radio" id="idFormato24" name="formatoHora" value="24">
-                        <label for="idFormato24" class="formatoHora">24</label>
-                    </div>
-                    <div class="clLabelTemperatura">
-                        <label for="escalaTemp">Temperature</label>
-                    </div>
-                    <div class="clTemperatura">
-                        <input type="radio" id="idCelsius" name="escalaTemp" value="C" checked>
-                        <label for="idCelsius" class="escalaTemp">°C</label>
-                        <input type="radio" id="idFahrenheit" name="escalaTemp" value="F">
-                        <label for="idFahrenheit" class="escalaTemp">°F</label>
-                        <input type="radio" id="idKelvin" name="escalaTemp" value="K">
-                        <label for="idKelvin" class="escalaTemp">°K</label>
-                    </div>
-                    <div class="clCidade">
-                        <input type="text" id="idCidade" name="cidade" placeholder="City">
-                    </div>
-                    <div class="clGenero">
-                        <input type="radio" id="idMr" name="sexo" value="Mr" checked>
-                        <label for="idMr">Mr.</label>
-                        <input type="radio" id="idMrs" name="sexo" value="Mrs">
-                        <label for="idMrs" class="sexo">Mrs.</label>
-                    </div>
-                    <div class="clNome">
-                        <input type="text" id="idNome" name="nome" placeholder="Name">
-                    </div>
-                    <div class="clBotaoSalvarConfiguracao">
-                        <button type="button" id="idBtnSalvar" value="Save">Save</button>
-                    </div>
-                    <br><br>
-
-                    <output id="idMessageSettings"></output>
-                </form>
-            </main>
-
-            <footer class="clRodapeConfiguracao">
-                <a href="#idTelaPrincipal"  class="link"><img src="./assets/icons/time_icon.png" alt="Imagem de um relógio como link para a página principal"></a>
-            </footer>
-
-            <div class="clBackgroundConfiguracao">
-                <img  src="./assets/icons/34262_config_configuration_engine_options_preferences_icon.png" alt="Imagem de uma engrenagem do botão de configuração">
+        <header class="clCabecalhoPrincipal">
+            <div class="clPrevisaoDoTempo">
+                <output class="clTemperaturaMinima" id="tempMin"></output>
+                <output class="clTemperaturaMaxima" id="tempMax"></output>
+                <output class="clTemperaturaAtual" id="tempNow"></output>
             </div>
-            
-        </section>
+            <div class="clImagemPrevisaoDoTempo">
 
-        <section class="clTelaAlarme" id="idTelaAlarme">
-
-            <header class="clCabecalhoAlarme">
-                <h1>Alarm</h1>
-                <a href="#idTelaNovoAlarme">New Alarm</a>
-            </header>
-            
-            <main class="clInfoAlarme">
-                
-            </main>
-            
-            <footer class="clRodapeAlarme">
-                <a href="#idTelaPrincipal"  class="link"><img src="./assets/icons/time_icon.png" alt="Imagem de um relógio como link para a página principal"></a>
-            </footer>
-
-            <div class="clBackgroundRelogio">
-                <img  src="./assets/icons/time_icon.png" alt="Imagem de uma engrenagem do botão de configuração">
             </div>
+        </header>
 
-        </section>
+        <main class="clInfoPrincipal">
+            <div class="clInformacoes">
 
-        <section class="clTelaNovoAlarme" id="idTelaNovoAlarme">
+                <output class="clHoraCerta" id="horaCerta"></output>
 
-            <header class="clCabecalhoNovoAlarme">
-                <h1>New Alarm</h1>
-            </header>
+                <output class="clDataCerta" id="hoje"></output>
 
-            <main class="clInfoNovoAlarme">
+                <output class="clMensagem" id="msn"></output>
 
-                <div class="clTime">
-                    <label class="clLabelTempo" for="idHora" >Time</label>
-                    <input class="clHora" type="text" id="idHora" placeholder="10:30">
+                <output class="clDescricaoEvento" id="description"></output>
 
-                    <div class="clPeriodoAm">
-                        <input type="radio" id="idAm" name="nmPeriodo" value="AM" checked>
-                        <label for="idAm">am</label>
-                    </div>
-                    <div class="clPeriodoPm">
-                        <input type="radio" id="idPm" name="nmPeriodo" value="PM">
-                        <label for="idPm">pm</label>
-                    </div>  
+                <button type="button" name="nmBtnAlarme" id="idBtnAlarme" class="clBotaoAlarme" value="Set Alarm"><img
+                        src="assets/icons/time_icon.png" alt="Imagem relógio">
+                    <p id="idTextBtnAlarm">Set Alarm</p>
+                </button>
 
-                    <input class="clDescricao" type="text" id="idDescrição" maxlength="50" placeholder="Description">  
+            </div>
+        </main>
+
+        <footer class="clRodapePrincipal">
+            <a href="#idTelaConfiguracao" class="clIconeConfiguracao"><img id="idIconeConfiguracao" alt="home"
+                    src="./assets/icons/configuration_settings_icon3.png"></a>
+        </footer>
+    </section>
+
+    <section class="clTelaConfiguracao" id="idTelaConfiguracao">
+
+        <header class="clCabecalhoConfiguracao">
+            <h1>Config</h1>
+        </header>
+
+        <main class="clInfoConfiguracao">
+            <form class="clFormularioConfiguracao">
+                <div class="clLabelFormato">
+                    <label for="formatoHora">Time Format</label>
                 </div>
-                
-                <button type="button" id="idBtnSaveNewAlarm" class="clBotaoSalvarAlarme">Save</button>
+                <div class="clFormato">
+                    <input type="radio" id="idFormato12" name="formatoHora" value="12" checked>
+                    <label for="idFormato12" class="formatoHora">12</label>
+                    <input type="radio" id="idFormato24" name="formatoHora" value="24">
+                    <label for="idFormato24" class="formatoHora">24</label>
+                </div>
+                <div class="clLabelTemperatura">
+                    <label for="escalaTemp">Temperature</label>
+                </div>
+                <div class="clTemperatura">
+                    <input type="radio" id="idCelsius" name="escalaTemp" value="C" checked>
+                    <label for="idCelsius" class="escalaTemp">°C</label>
+                    <input type="radio" id="idFahrenheit" name="escalaTemp" value="F">
+                    <label for="idFahrenheit" class="escalaTemp">°F</label>
+                    <input type="radio" id="idKelvin" name="escalaTemp" value="K">
+                    <label for="idKelvin" class="escalaTemp">°K</label>
+                </div>
+                <div class="clCidade">
+                    <input type="text" id="idCidade" class="clInputTexto" name="cidade" placeholder="City">
+                </div>
+                <div class="clGenero">
+                    <input type="radio" id="idMr" name="sexo" value="Mr" checked>
+                    <label for="idMr">Mr.</label>
+                    <input type="radio" id="idMrs" name="sexo" value="Mrs">
+                    <label for="idMrs" class="sexo">Mrs.</label>
+                </div>
+                <div class="clNome">
+                    <input type="text" id="idNome" class="clInputTexto" name="nome" placeholder="Name">
+                </div>
+                <div class="clBotaoSalvarConfiguracao">
+                    <button type="button" id="idBtnSalvar" value="Save">Save</button>
+                </div>
                 <br><br>
 
-                <output id="idMessageNewAlarm"></output>
+                <output id="idMessageSettings"></output>
+            </form>
+        </main>
 
-            </main>
+        <footer class="clRodapeConfiguracao">
+            <a href="#idTelaPrincipal" class="link"><img src="./assets/icons/time_icon.png"
+                    alt="Imagem de um relógio como link para a página principal"></a>
+        </footer>
 
-            <footer class="clRodapeNovoAlarme">
-                <a href="#idTelaPrincipal"  class="link"><img src="./assets/icons/time_icon.png" alt="Imagem de um relógio como link para a página principal"></a>
-            </footer>
+        <div class="clBackgroundConfiguracao">
+            <img src="./assets/icons/34262_config_configuration_engine_options_preferences_icon.png"
+                alt="Imagem de uma engrenagem do botão de configuração">
+        </div>
 
-            <div class="clBackgroundCalendario">
-                <img  src="./assets/icons/34257_calendar_icon.png" alt="Imagem de uma engrenagem do botão de configuração">
+    </section>
+
+    <section class="clTelaAlarme" id="idTelaAlarme">
+
+        <header class="clCabecalhoAlarme">
+            <h1>Alarm</h1>
+            <a href="#idTelaNovoAlarme">New Alarm</a>
+        </header>
+
+        <main class="clInfoAlarme">
+
+        </main>
+
+        <footer class="clRodapeAlarme">
+            <a href="#idTelaPrincipal" class="link"><img src="./assets/icons/time_icon.png"
+                    alt="Imagem de um relógio como link para a página principal"></a>
+        </footer>
+
+        <div class="clBackgroundRelogio">
+            <img src="./assets/icons/time_icon.png" alt="Imagem de uma engrenagem do botão de configuração">
+        </div>
+
+    </section>
+
+    <section class="clTelaNovoAlarme" id="idTelaNovoAlarme">
+
+        <header class="clCabecalhoNovoAlarme">
+            <h1>New Alarm</h1>
+        </header>
+
+        <main class="clInfoNovoAlarme">
+
+            <div class="clTime">
+                <label class="clLabelTempo" for="idHora">Time</label>
+                <input class="clHora" type="text" id="idHora" placeholder="10:30">
+
+                <div class="clPeriodoAm">
+                    <input type="radio" id="idAm" name="nmPeriodo" value="AM" checked>
+                    <label for="idAm">am</label>
+                </div>
+                <div class="clPeriodoPm">
+                    <input type="radio" id="idPm" name="nmPeriodo" value="PM">
+                    <label for="idPm">pm</label>
+                </div>
+
+                <input class="clDescricao" type="text" id="idDescrição" maxlength="50" placeholder="Description">
             </div>
-            
-        </section>
 
-        <script>
+            <button type="button" id="idBtnSaveNewAlarm" class="clBotaoSalvarAlarme">Save</button>
+            <br><br>
 
-            /* Script tela Principal*/
+            <output id="idMessageNewAlarm"></output>
 
-            var fieldTempMin = document.getElementById("tempMin");
-            var fieldTempMax = document.getElementById("tempMax");
-            var fieldTempNow = document.getElementById("tempNow");
-            var divWeatherImage = document.querySelector("div[class='clImagemPrevisaoDoTempo']");
+        </main>
 
-            var fieldTime = document.getElementById("horaCerta");
-            var fieldDate = document.getElementById("hoje");
-            var fieldMessage = document.getElementById("msn");
-            var fieldAlarmDescription = document.getElementById("description");
-            var textBtnAlarm = document.getElementById("idTextBtnAlarm");
-            var btnAlarm = document.getElementById("idBtnAlarme");
+        <footer class="clRodapeNovoAlarme">
+            <a href="#idTelaPrincipal" class="link"><img src="./assets/icons/time_icon.png"
+                    alt="Imagem de um relógio como link para a página principal"></a>
+        </footer>
 
-            var config = {}; 
-            var city = "";
-            var weatherForecast = {};
+        <div class="clBackgroundCalendario">
+            <img src="./assets/icons/34257_calendar_icon.png" alt="Imagem de uma engrenagem do botão de configuração">
+        </div>
 
-            var time = "";
-            var timeList = [];
-            var alarms = [];
-            var alarmsOn = [];
-            var alarmsOnInSeconds = [];
-            var alarmRinging = false;
-            var audio;
+    </section>
 
-            document.addEventListener("DOMContentLoaded", async function() {
+    <script src="app.js"></script>
 
-                setInitialInfo();
-            });
+</body>
 
-            async function setInitialInfo() {
-
-                config = await getConfig();
-
-                if (config.value) {
-                    setInfoConfig(config);
-                }
-                
-                if (config.value) {
-                    city = config.value.cidade;
-                } 
-            
-                weatherForecast = await getClima(city);
-                setInfoWeather(weatherForecast);
-
-                time = "";
-                setClock();
-
-                var today = await getHoje();
-                fieldDate.value = today.hoje;
-
-                var message = await getMessage();
-                fieldMessage.value = message.mensagem;
-
-                var response = await getAlarm();
-
-                if (response.alarms) {
-                    alarms = response.alarms;
-                    createAlarms(alarms);
-                }
-            
-            }
-
-            btnAlarm.addEventListener("click", manageAlarm);
-
-            function manageAlarm() {
-
-                if (alarmRinging) {
-                    audio.pause();
-                    textBtnAlarm.innerHTML = "Set Alarm";
-                    fieldAlarmDescription.value = "";
-                    alarmRinging = false;
-                } else {
-                    var url = location.href;
-                    location.href = "#idTelaAlarme";
-                    history.replaceState(null,null,url);
-                }
-            }
-
-            function ringAlarm(positionIndex) {
-
-                alarmRinging = true;
-
-                audio = new Audio("./assets/sound/universal_pic_tune.mp3");
-                audio.play();
-                audio.loop = true;
-
-                textBtnAlarm.innerHTML = "Turn Alarm Off";
-                fieldAlarmDescription.value = alarmsOn[positionIndex].descricao;
-            }
-
-            function getAlarmsOn(alarmsList) {
-
-                var alarms = [];
-
-                alarmsList.forEach(element => {
-
-                    if (element.isAtivo == true) {
-                        alarms.push(element);
-                    }
-                });
-
-                alarms = orderAlarms(alarms);
-                
-                return alarms;
-            }
-
-            function orderAlarms(alarmsList) {
-
-                alarmsOnInSeconds = [];
-
-                alarmsList.forEach(element => {
-                    
-                    var listTime = element.hora.split(":");
-
-                    if (element.isAm == true) {
-                        alarmsOnInSeconds.push(((listTime[0] * 3600) + (listTime[1] * 60)));
-                    } else {
-                        if (listTime[0] == 12) {
-                            alarmsOnInSeconds.push(((Number(listTime[0]) * 3600) + (listTime[1] * 60)));
-                        } else {
-                            alarmsOnInSeconds.push((((Number(listTime[0]) + 12) * 3600) + (listTime[1] * 60)));
-                        }
-                    }
-                    
-                });
-
-                for (let index = 0; index < alarmsOnInSeconds.length; index++) {
-
-                    var time = alarmsOnInSeconds[index];
-                    var positionIndex = index;
-                    
-                
-                    for (let count = (index + 1); count < alarmsOnInSeconds.length; count++) {
-                        
-                        if (alarmsOnInSeconds[count] < time) {
-                            time = alarmsOnInSeconds[count];
-                            positionIndex = count;
-                        }
-                    }
-                    
-                    if(positionIndex != index) {
-                        var store = alarmsOnInSeconds[index];
-                        alarmsOnInSeconds[index] = time;
-                        alarmsOnInSeconds[positionIndex] = store;
-
-                        store = alarmsList[index];
-                        alarmsList[index] = alarmsList[positionIndex];
-                        alarmsList[positionIndex] = store;
-                    }
-                    
-                }
-
-                return alarmsList;
-
-            }
-
-             async function getClima(city) {
-
-                const response = await fetch(`http://localhost:3001/clima?cidade=${city}`);
-                const data = await response.json();
-                
-                return data;
-            }
-
-            setInterval(() => {
-                updateWeather();
-            }, (1000 * 60 * 15));
-            
-            async function updateWeather() {
-                
-                var weatherForecastNow = await getClima(city);
-
-                const keys = Object.keys(weatherForecastNow);
-
-                keys.forEach(key => {
-
-                    if (weatherForecastNow[key] != weatherForecast[key]) {
-                        weatherForecast = weatherForecastNow;
-                        setInfoWeather(weatherForecast);
-                    }
-
-                });
-            }
-
-            function setInfoTemp(weather) {
-
-                var temperatureScale = "C" 
-
-                if (config.value) {
-                    temperatureScale = config.value.escalaTemperatura;
-                }
-
-                if (temperatureScale == "C") {
-
-                    fieldTempMin.value = "Min: " + weather.tempMin + " °C";
-                    fieldTempMax.value = "Max: " + weather.tempMax + " °C";
-                    fieldTempNow.value = "Now: " + weather.tempNow + " °C";
-
-                } else if (temperatureScale == "F") {
-
-                    fieldTempMin.value = "Min: " + ((Number(weather.tempMin) * 1.8) + 32) + " °F";
-                    fieldTempMax.value = "Max: " + ((Number(weather.tempMax) * 1.8) + 32) + " °F";
-                    fieldTempNow.value = "Now: " + ((Number(weather.tempNow) * 1.8) + 32) + " °F";
-
-                } else if (temperatureScale == "K") {
-
-                    fieldTempMin.value = "Min: " + (Number(weather.tempMin) + 273.15) + " °K";
-                    fieldTempMax.value = "Max: " + (Number(weather.tempMax) + 273.15) + " °K";
-                    fieldTempNow.value = "Now: " + (Number(weather.tempNow) + 273.15) + " °K";
-
-                }
-
-            }
-
-            function setInfoWeather(weather) {
-
-                setInfoTemp(weather);
-
-                var weatherImage = document.createElement('img');
-                weatherImage.className = "clIconeTempo";
-
-                switch (weather.condition_slug) {
-                    case "storm":
-                        weatherImage.src = "./assets/icons/storm_icon.png";
-                        weatherImage.alt = "Imagem de nuvem com raios indicando tempestade";
-                        break;
-                    case "snow":
-                        weatherImage.src = "./assets/icons/snow_icon.png";
-                        weatherImage.alt = "Imagem de nuvem com neve";
-                        break;
-                    case "cloud":
-                    case "fog":
-                        weatherImage.src = "./assets/icons/overcast_icon.png";
-                        weatherImage.alt = "Imegm de nuvem indicando tempo nublado ou com neblina";
-                        break;
-                    case "hail":
-                        weatherImage.src = "./assets/icons/scattered_showers_icon.png";
-                        weatherImage.alt = "Imagem de nuvem com granizo";
-                        break;
-                    case "clear_day":
-                    case "none_day":
-                        weatherImage.src = "./assets/icons/clear_weather_icon.png";
-                        weatherImage.alt = "Imagem do sol indicando dia ensolarado";
-                        break;
-                    case "clear_night":
-                    case "none_night":
-                        weatherImage.src = "./assets/icons/night_icon.png";
-                        weatherImage.alt = "Imagem da lua indicando noite com céu limpo";
-                        break;
-                    case "rain":
-                        weatherImage.src = "./assets/icons/showers_icon.png";
-                        weatherImage.alt = "Imagem de nuvem com chuva indicando dia chuvoso";
-                        break;
-                    case "cloudly_day":
-                        weatherImage.src = "./assets/icons/clouds_icon.png";
-                        weatherImage.alt = "Imagem do sol com nuvens indicando dia nublado";
-                        break;
-                    case "cloudly_night":
-                        weatherImage.src = "./assets/icons/clouds_night_icon.png";
-                        weatherImage.alt = "Imagem da lua com nuvens indicando noite com céu nublado";
-                        break;
-                    default:
-                        break;
-                }
-
-                if (divWeatherImage.hasChildNodes()) {
-                    divWeatherImage.removeChild(divWeatherImage.firstChild);
-                }
-
-                divWeatherImage.appendChild(weatherImage);
-            }
-
-            async function getHoraCerta() {
-
-                const response = await fetch(`http://localhost:3001/horaCerta`);
-                const data = await response.json();
-
-                return data;
-            }
-
-            setInterval(() => {
-                setClock();
-            }, 1000);
-
-            async function setClock() {
-
-                if (time == "") {
-
-                    time =  await getHoraCerta();
-                    timeList = time.horaCerta.split(":");
-
-                } else if ((timeList[1] == 0) && (timeList[2] == 0)) {
-
-                    time = await getHoraCerta();
-                    timeList = time.horaCerta.split(":");
-                    
-                    if ((timeList[0] == "00") && (timeList[1] == "00") && (timeList[2] == "00")) {
-                        var today = await getHoje();
-                        fieldDate.value = today.hoje;
-                    }
-                    
-                    var message = await getMessage();
-                    fieldMessage.value = message.mensagem;
-                }
-
-                if (config.value) {
-                    if (config.value.formatoHora == "12") {
-
-                        if(Number(timeList[0]) > 12) {
-                            timeList[0] = Number(timeList[0]) - 12;
-                        }
-                    }
-                }
-
-                if (timeList[2] < 60) {
-                    timeList[2] = Number(timeList[2]) + 1;
-
-                    if(timeList[2] == 60) {
-                        timeList[2] = 0;
-                        timeList[1] = Number(timeList[1]) + 1;
-
-                        setNextAlarm(Number(timeList[0]), Number(timeList[1]));
-
-                        if(timeList[1] == 60) {
-                            timeList[1] = 0;
-                            timeList[0] = Number(timeList[0]) + 1;
-                        }
-                    }
-                }
-
-                if ((timeList[0] < 10) && (String(timeList[0]).length == 1)) {
-                    timeList[0] = "0" + timeList[0];
-                }
-
-                if ((timeList[1] < 10) && (String(timeList[1]).length == 1)) {
-                    timeList[1] = "0" + timeList[1];
-                }
-        
-                if ((timeList[2] < 10) && (String(timeList[2]).length == 1)) {
-                    timeList[2] = "0" + timeList[2];
-                }
-
-                var hour = timeList[0] + ":" + timeList[1] + ":" + timeList[2];
-                
-                fieldTime.value = hour;
-            }
-
-            function setNextAlarm(hour, minute) {
-
-                var today = new Date();
-                var timeNow = today.getHours();
-
-                var timeNowInSeconds;
-                var nextAlarm = false;
-                var alarmNow;
-                var positionIndex;
-                
-                if (config.value) {
-                    if ((config.value.formatoHora == "12") && (timeNow >= 12) && (hour < 12)) {
-                        hour = hour + 12;
-                    }
-                }
-
-                timeNowInSeconds = ((hour * 3600) + (minute * 60));
-
-                alarmsOnInSeconds.forEach((element, index) => {
-
-                    if ((element >= timeNowInSeconds) && (nextAlarm == false)) {
-                        alarmNow = element;
-                        positionIndex = index;
-                        nextAlarm = true;
-                    }
-                    
-                });
-
-                if (alarmNow == timeNowInSeconds) {
-                    ringAlarm(positionIndex);
-                }
-
-            }
-            
-            async function getHoje() {
-
-                const response = await fetch(`http://localhost:3001/hoje`);
-                const data = await response.json();
-                
-                return data;
-            }
-            
-            async function getMessage() {
-
-                const response = await fetch(`http://localhost:3001/message`);
-                const data = await response.json();
-                
-                return data;
-
-            }
-
-            document.body.addEventListener("click", async function(event) {
-
-                var element = event.target;
-
-                if (element.id == "idIconeConfiguracao") {
-                    const data = await getConfig();
-                    if (data.value) {
-                        setInfoConfig(data);
-                    }    
-                }
-
-            })
-
-            /* Script tela Config */
-
-            var radioButtonFormat = document.querySelectorAll("input[name='formatoHora']");
-            var radioButtonTemperatureScale = document.querySelectorAll("input[name='escalaTemp']");
-            var radioButtonGender = document.querySelectorAll("input[name='sexo']");
-            var fieldCity = document.getElementById("idCidade");
-            var fieldName = document.getElementById("idNome");
-            var buttonSaveSettings = document.getElementById("idBtnSalvar");
-            var fieldMessageSettings = document.getElementById("idMessageSettings");
-
-            buttonSaveSettings.addEventListener("click", saveSettings);
-
-            async function saveSettings() {
-
-                const data = await postConfig();
-
-                if (data.mensagem != undefined) {
-
-                    fieldMessageSettings.value = data.mensagem;
-
-                } else {
-
-                    fieldMessageSettings.value = "Informações gravadas com sucesso!";
-
-                    setTimeout(() => {
-                        fieldMessageSettings.value = "";
-                    }, 5000);
-
-                    var newConfig = await getConfig();
-                    var setNewConfig = false;
-
-                    if (config.value) {
-                        if (newConfig.value) {
-
-                            const keys = Object.keys(newConfig.value);
-
-                            keys.forEach(key => {
-
-                                if (config.value[key] != newConfig.value[key]) {
-                                    setNewConfig = true;
-                                }
-                            });
-                        }
-
-                        if (setNewConfig) {
-                            config = newConfig;
-                            setInitialInfo();
-                        }
-                    } else {
-
-                        config = newConfig;
-                        setInitialInfo();
-                    }
-                }
-
-            }
-
-            async function getConfig() {
-
-                const response = await fetch(`http://localhost:3001/config`);
-                const data = await response.json();
-                
-                return data;
-            }
-
-            function setInfoConfig(info) {
-
-                radioButtonFormat.forEach(element => {
-                    
-                    if (element.value == info.value.formatoHora) {
-                        element.checked = true;
-                    }
-                });
-
-                radioButtonTemperatureScale.forEach(element => {
-
-                    if (element.value == info.value.escalaTemperatura) {
-                        element.checked = true;
-                    }
-                });
-
-                fieldCity.value = info.value.cidade;
-
-                radioButtonGender.forEach(element => {
-                    
-                    if (element.value == info.value.genero) {
-                        element.checked = true;
-                    }
-                });
-
-                fieldName.value = info.value.nome;
-
-            }
-
-            async function postConfig() {
-
-                var informations = await getInfoConfig();
-                
-                const settings = {  method: 'POST',
-                                    headers: {
-                                                Accept: 'application/json',
-                                                'Content-Type': 'application/json',
-                                            }
-                                };
-
-                const response = await fetch(`http://localhost:3001/config${informations}`, settings);
-                const data = await response.json();
-
-                return data;
-                
-            }
-
-            async function getInfoConfig() {
-                
-                var hourFormat;
-                var temperatureScale;
-                var city; 
-                var gender;
-                var name;
-
-                radioButtonFormat.forEach(element => {
-                    
-                    if (element.checked == true) {
-                        hourFormat = element.value;
-                    }
-                });
-
-                radioButtonTemperatureScale.forEach(element => {
-
-                    if (element.checked == true) {
-                        temperatureScale = element.value;
-                    }
-                });
-
-                city = fieldCity.value;
-
-                radioButtonGender.forEach(element => {
-                    
-                    if (element.checked == true) {
-                        gender = element.value;
-                    }
-
-                });
-
-                name = fieldName.value;
-
-                var informations = `?formatoHora=${hourFormat}&escalaTemperatura=${temperatureScale}&cidade=${city}&genero=${gender}&nome=${name}`;
-
-                return informations;
-            }
-
-            /* Script tela Alarm */
-
-            document.body.addEventListener("click", async function(event) {
-
-                var counter = 0;
-                var element = event.target;
-
-                if (element.className == "clAlarm") {
-                    
-                    var position = element.value;
-                    var isAtivo = alarms[position].isAtivo;
-                    
-                    if (isAtivo == true) {
-                        isAtivo = false;
-                    } else {
-                        isAtivo = true;
-                    }
-                    
-                    var response = await putAlarms(position, isAtivo);
-
-                    if (response.alarms) {
-                        alarms = response.alarms;
-                        createAlarms(alarms);
-                    }
-
-                } else if (element.className == "clBtnRemover") {
-
-                    var position = element.value;
-                    
-                    var response = await deleteAlarm(position);
-
-                    if (response.alarms) {
-                        alarms = response.alarms;
-                        createAlarms(alarms);
-                    }
-
-                }
-            });
-
-            async function putAlarms(position, isAtivo) {
-
-                const settings = {method: 'PUT',  
-                                headers: {
-                                            'Content-type': 'application/json'
-                                        }
-                                };
-
-                var response = await fetch(`http://localhost:3001/alarms?position=${position}&isAtivo=${isAtivo}`, settings);
-                var data = await response.json();
-
-                return data;
-
-            }
-
-            async function deleteAlarm(position) {
-
-                const settings = {method: 'DELETE',  
-                                headers: {
-                                            'Content-type': 'application/json'
-                                        }
-                                };
-
-                var response = await fetch(`http://localhost:3001/alarms?position=${position}`, settings);
-                var data = await response.json();
-
-                return data;
-
-            }
-
-            function createAlarms(alarmsList) {
-
-                alarmsOn = getAlarmsOn(alarmsList);
-
-                var counter = 0;
-                var infoAlarm = document.getElementsByClassName("clInfoAlarme");
-
-                while(infoAlarm[0].hasChildNodes()) {
-                    infoAlarm[0].removeChild(infoAlarm[0].firstChild);
-                }
-                
-                alarmsList.forEach(element => {
-
-                    counter++;
-
-                    var alarmDiv = document.createElement('div');
-                    alarmDiv.className = "clAlarme";
-
-                    var alarmCheckboxLabel = document.createElement('label');
-                    alarmCheckboxLabel.className = "checkbox";
-
-                    var alarmCheckbox = document.createElement('input');
-                    alarmCheckbox.type = "checkbox";
-                    alarmCheckbox.id= "idAlarm" + counter;
-                    alarmCheckbox.name = "nmAlarm" + counter;
-                    alarmCheckbox.className = "clAlarm";
-                    alarmCheckbox.value = (counter - 1);
-
-                    if (element.isAtivo == true) {
-                        alarmCheckbox.checked = true;
-                    } else {
-                        alarmCheckbox.checked = false;
-                    }
-
-                    var alarmCheckboxSpan = document.createElement('span');
-                    
-                    alarmCheckboxLabel.appendChild(alarmCheckbox);
-                    alarmCheckboxLabel.appendChild(alarmCheckboxSpan);
-
-                    var alarmLabel = document.createElement('label');
-                    alarmLabel.htmlFor = "idAlarm" + counter;
-                    alarmLabel.className = "clLabelHora";
-
-                    if (element.isAm == true) {
-                        alarmLabel.innerText = element.hora + "am";
-                    } else {
-                        alarmLabel.innerText = element.hora + "pm";
-                    }
-
-                    var alarmText = document.createElement('p');
-                    alarmText.innerText = element.descricao;
-
-                    var alarmButton = document.createElement('button');
-                    alarmButton.innerText = "Remover";
-                    alarmButton.className = "clBtnRemover";
-                    alarmButton.value = (counter - 1);
-
-                    alarmDiv.appendChild(alarmCheckboxLabel);
-                    alarmDiv.appendChild(alarmLabel);
-                    alarmDiv.appendChild(alarmText);
-                    alarmDiv.appendChild(alarmButton);
-                    infoAlarm[0].appendChild(alarmDiv);
-                     
-                });
-
-            }
-
-            /* Script tela New Alarm */
-
-            var periodSelected = true;
-            
-            var fieldHour = document.getElementById("idHora");
-            var fieldDescription = document.getElementById("idDescrição");
-            var btnSaveNewAlarm = document.getElementById("idBtnSaveNewAlarm");
-            var fieldMessageNewAlarm = document.getElementById("idMessageNewAlarm");
-            
-            btnSaveNewAlarm.addEventListener("click", saveAlarm);
-
-            async function saveAlarm() {
-                
-                var hour = consistHour();
-                var description = fieldDescription.value;
-
-                if (hour != false) {
-
-                    var alarmInfo = `?isAtivo=${true}&hora=${hour}&isAm=${periodSelected}&descricao=${description}`;
-                    var response = await postAlarm(alarmInfo);
-                    
-                    if (response.status != 0) {
-
-                        fieldMessageNewAlarm.value = response.mensagem;
-
-                        setTimeout(() => {
-                           resetFields();
-                        }, 5000);
-
-                    } else {
-
-                        var response = await getAlarm();
-
-                        if (response.alarms) {
-                            alarms = response.alarms;
-                            createAlarms(alarms);
-                        }
-
-                        resetFields();
-                        var url = location.href;
-                        location.href = "#idTelaAlarme";
-                        history.replaceState(null,null,url);
-                    }
-
-                } else {
-                    fieldMessageNewAlarm.value = "Por favor informe uma hora no intervalo de 00:00 às 11:59";
-
-                    setTimeout(() => {
-                        fieldMessageNewAlarm.value = "";
-                    }, 5000);
-                } 
-            }
-
-            function resetFields() {
-                fieldMessageNewAlarm.value = "";
-                fieldHour.value = "";
-                fieldDescription.value = "";
-                var fieldPeriod = document.getElementById("idAm");
-                fieldPeriod.checked = true;
-                periodSelected = true;
-            }
-
-            async function getAlarm() {
-
-                const response = await fetch(`http://localhost:3001/alarms`);
-                const data = await response.json();
-
-                return data;
-            }
-
-            async function postAlarm(alarmInfo) {
-
-                const settings = {  method: 'POST',
-                                    headers: {
-                                                Accept: 'application/json',
-                                                'Content-Type': 'application/json',
-                                            }
-                                };
-
-                const response = await fetch(`http://localhost:3001/alarms${alarmInfo}`, settings);
-                const data = await response.json();
-
-                return data;
-            }
-
-            function consistHour() {
-
-                var hour = String(fieldHour.value);
-                var timeList = hour.split(":");
-
-                for (let index = 0; index < timeList.length; index++) {
-                    
-                    if (index == 0) {
-                        if ((timeList[index] == undefined) || (timeList[index] == "") || (timeList[index] > 11)) {
-
-                            return false;
-                        } else if ((timeList[index].length == 1) && (timeList[index] < 10)) {
-
-                            timeList[index] = "0" + timeList[index];
-                        }
-                    }
-
-                    if (index == 1) {
-                        if (timeList[index] > 59) {
-
-                            return false;
-                        } else if ((timeList[index].length == 1) && (timeList[index] < 10)) {
-
-                            timeList[index] = "0" + timeList[index];
-                        } else if (timeList[index] == "")  {
-
-                            timeList[index] = "00";
-                        }           
-                    } 
-                    
-                }           
-
-                if ((timeList[1] == undefined)) {
-                    timeList[1] = "00";
-                }
-
-                for (let index = 0; index < timeList.length; index++) {
-                    
-                    if (index == 0) {
-                        
-                        if ((periodSelected == false) && (timeList[index] == "00")) {
-                            timeList[index] = "12";
-                        }
-
-                        hour = timeList[index];
-                    } else {
-                        hour += ":" + timeList[index];
-                    }
-                }
-
-                return hour;
-            }
-
-            fieldHour.addEventListener("keydown", function(event){
-
-                var key = event.key;
-                var condition = (((key >= 0) && (key <= 9)) || (key == "Backspace"));
-
-                if (key == "Tab") {
-                    fieldDescription.focus();
-                }
-
-                if (condition == false) {
-
-                    event.preventDefault();
-
-                } else if (key != "Backspace"){
-
-                    var hour = String(fieldHour.value);
-
-                    if (hour.length <= 4) {
-
-                        while (hour.indexOf(":") > 0) {
-                            hour = hour.replace(":","");
-                        }
-
-                        fieldHour.value = hour.replace(/.{2}/g, '$&:');     
-                    } else {
-                        event.preventDefault();
-                    } 
-                }
-
-            });
-
-            document.body.addEventListener("change", function(event) {
-
-                var element = event.target;
-
-                if ((element.id == "idAm") || (element.id == "idPm")) {
-
-                    var period = document.querySelector('input[name="nmPeriodo"]:checked').value;
-
-                    if (period == "AM") {
-                        periodSelected = true;
-                    } else {
-                        periodSelected = false;
-                    }
-                }
-            });
-
-        </script>
-
-    </body>
 </html>

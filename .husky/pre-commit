@@ -1,0 +1,4 @@
+# Git Hook executado antes de cada commit.
+# Garante que o código está estilizado (linter) e que os testes passam.
+npm run lint
+npm test
