@@ -4,9 +4,7 @@ Projeto da disciplina de **Clean Code**. Consiste na refatoração de uma
 aplicação web de relógio com alarmes, originalmente desenvolvida no curso
 Entra21, aplicando os princípios de código limpo estudados em aula.
 
-**Integrantes:** Rafael Ronsoni Gaidzinski · William Espindola Cardoso · Thiago
-
-**Repositório:** https://github.com/rafaelrgaidzinski/AlarmClock-Entra21
+**Integrantes:** Rafael Ronsoni Gaidzinski · William Espindola Cardoso · Thiago Meller
 
 - Branch `original` — versão antiga do projeto, antes da refatoração.
 - Branch `main` — versão refatorada (este conteúdo).
